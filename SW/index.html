@@ -17,12 +17,17 @@ IR remote. Created for COMP3601 Project
 <h3> Song id:</h3>
 <h4> Add new song</h4>
 <input type="text" id="nextSong">
-<button onclick= "addNewSong()"> Add new song </button>
+<button onclick= "addNewSong(); document.getElementById('nextSong').value = ''"> Add new song </button>
 <br><br>
-<button onclick= "getNextSong()"> Play next song </button>
-<button onclick= "getPrevSong()"> Play previous song </button>
-<button onclick= "volumeUp()"> Volume Up </button>
-<button onclick= "volumeDown()"> Volume down </button>
+<button onclick= "getPrevSong()"> <img src="https://static.thenounproject.com/png/534333-200.png" width="20"> </button>
+
+<button onclick= "getNextSong()">  <img src="https://static.thenounproject.com/png/534333-200.png" width="20" style="transform:rotate(180deg);"> </button>
+
+<button onclick= "volumeDown()"> <img src="https://www.freeiconspng.com/uploads/volume-icon-19.png" width="20"> </button>
+
+<button onclick= "volumeUp()"> <img src="https://image.flaticon.com/icons/png/512/25/25695.png" width="20"></button>
+
+<button onclick= "playPause()"> <img src="https://lh3.googleusercontent.com/proxy/pL9VB6HbhJ6D-0UyJeig2GsvuqmJ8WdGxXwEHZbekhlJ-lpxPM6rdw9OTpARPEvHSJpNe9_nFu9ucMebn9a5AJCVx3P7KWkduL7IsyPmluBYgFS6xTgN45iwj5oSBDo" id = "playPauseButton" width="20"></button>
 <br>
 
 <p id="currSongs"></p>
@@ -45,6 +50,7 @@ src="https://www.youtube.com/embed/PWK8EuUSMSI?autoplay=1">
 <script>
     var songs = ['_6pyzdiG1g0'];
     var index = 0;
+    var play = true; 
 
     var tag = document.createElement('script');
     tag.src = "https://www.youtube.com/iframe_api";
@@ -78,8 +84,13 @@ src="https://www.youtube.com/embed/PWK8EuUSMSI?autoplay=1">
 
     function addNewSong() {
         var videoId = document.getElementById("nextSong").value;
-        songs.push(videoId);
-        printSongs()
+        if(videoId.includes("www.youtube.com/watch")){
+          videoId = videoId.split('=')[1];
+          if(videoId.length > 0){
+            songs.push(videoId);
+            printSongs()
+          }
+        }
     }
 
     function getNextSong() {
@@ -104,6 +115,18 @@ src="https://www.youtube.com/embed/PWK8EuUSMSI?autoplay=1">
     function volumeDown() {
         var volume = player.getVolume();
         player.setVolume(volume -= 10);
+    }
+    
+    function playPause() {
+    	if(play){
+        	player.pauseVideo();
+            document.getElementById("playPauseButton").src="https://www.pinpng.com/pngs/m/34-346993_play-free-png-image-black-play-button-png.png"; 
+            play = false;
+		} else {
+        	player.playVideo();
+    document.getElementById("playPauseButton").src="https://lh3.googleusercontent.com/proxy/pL9VB6HbhJ6D-0UyJeig2GsvuqmJ8WdGxXwEHZbekhlJ-lpxPM6rdw9OTpARPEvHSJpNe9_nFu9ucMebn9a5AJCVx3P7KWkduL7IsyPmluBYgFS6xTgN45iwj5oSBDo";
+            play = true; 
+        }
     }
 </script>
 
