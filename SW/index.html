@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<!--
+A basic website that plays youtube videos that can be controlled by a
+IR remote. Created for COMP3601 Project
+-->
+<html lang="en">
+
+<head>
+<link rel="stylesheet" href="style.css">
+</head>
+
+
+<body>
+<h1>Music player</h1>
+<hr>
+
+<h3> Song id:</h3>
+<h4> Add new song</h4>
+<input type="text" id="nextSong">
+<button onclick= "addNewSong()"> Add new song </button>
+<br><br>
+<button onclick= "getNextSong()"> Play next song </button>
+<button onclick= "getPrevSong()"> Play previous song </button>
+<button onclick= "volumeUp()"> Volume Up </button>
+<button onclick= "volumeDown()"> Volume down </button>
+<br>
+
+<p id="currSongs"></p>
+
+<!-- For some reason, some videos on youtube will come up with a video 
+unavailable error msg-->
+
+<!-- Iframe tag implementation
+
+<iframe id="player" width = "1000" height = "600"
+src="https://www.youtube.com/embed/PWK8EuUSMSI?autoplay=1">
+</iframe>
+
+-->
+
+
+<!-- Based on code: https://developers.google.com/youtube/iframe_api_reference-->
+<div id="player"></div>
+
+<script>
+    var songs = ['_6pyzdiG1g0'];
+    var index = 0;
+
+    var tag = document.createElement('script');
+    tag.src = "https://www.youtube.com/iframe_api";
+    
+    var firstScriptTag = document.getElementsByTagName('script')[0];
+    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+    var player;
+    function onYouTubeIframeAPIReady() {
+    player = new YT.Player('player', {
+        height: '600',
+        width: '1000',
+        videoId: songs[index],
+        events: {
+        'onReady': onPlayerReady,
+        }
+    });
+    }
+
+    function onPlayerReady(event) {
+    player.seekTo(10, true);
+    player.setVolume(30);
+    printSongs();
+    player.playVideo();
+    }
+
+    function printSongs() {
+        var txt = "";
+        document.getElementById("currSongs").innerHTML = songs.join("<br>");
+    }
+
+    function addNewSong() {
+        var videoId = document.getElementById("nextSong").value;
+        songs.push(videoId);
+        printSongs()
+    }
+
+    function getNextSong() {
+        index++;
+        var videoId = songs[index];
+        printSongs()
+        player.loadVideoById(videoId);
+    }
+
+    function getPrevSong() {
+    index--;
+    var videoId = songs[index];
+    printSongs()
+    player.loadVideoById(videoId);
+    }
+
+    function volumeUp() {
+        var volume = player.getVolume();
+        player.setVolume(volume += 10);
+    }
+
+    function volumeDown() {
+        var volume = player.getVolume();
+        player.setVolume(volume -= 10);
+    }
+</script>
+
+</body>
+
+
+</html>
