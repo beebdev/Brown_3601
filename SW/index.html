@@ -27,6 +27,7 @@ every time you load a new song
 <hr>
 
 <h3> Song id:</h3>
+<h1 id = "debug"></h1>
 <h4> Add new song</h4>
 <input type="text" id="nextSong">
 
@@ -40,7 +41,7 @@ every time you load a new song
 
 <button onclick= "volumeUp()"> <img src="https://image.flaticon.com/icons/png/512/25/25695.png" width="20"></button>
 
-<button onclick= "playPause()"> <img src="https://lh3.googleusercontent.com/proxy/pL9VB6HbhJ6D-0UyJeig2GsvuqmJ8WdGxXwEHZbekhlJ-lpxPM6rdw9OTpARPEvHSJpNe9_nFu9ucMebn9a5AJCVx3P7KWkduL7IsyPmluBYgFS6xTgN45iwj5oSBDo" id = "playPauseButton" width="20"></button>
+<button onclick= "playPause()"> <img src="https://www.pinpng.com/pngs/m/34-346993_play-free-png-image-black-play-button-png.png" id = "playPauseButton" width="20"></button>
 <br>
 
 <p id="currSongs"> </p>
@@ -49,7 +50,7 @@ every time you load a new song
 
 <iframe id="sc-widget" width="100%" height="300" scrolling="no" frameborder="no" allow="autoplay" 
 src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/293137345
-&auto_play=true
+&auto_play=false
 &hide_related=false
 &show_comments=false
 &show_user=true
@@ -68,7 +69,7 @@ src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/29
     var songIDs = ['293137345', '259969488'];
     var index = 0;
     var volume = 10;
-    var play = true; 
+    var play = false; 
 
     (function(){
 
@@ -81,7 +82,7 @@ src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/29
                     console.log('sound ' + currentSound.get('') + 'began to play');
                 });
             });
-            
+
             widget.setVolume(volume);
             printSongs();
         });
@@ -100,9 +101,9 @@ src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/29
 
     function getNextSong() {
         index++;
-        widget.setVolume(volume);
-        widget.load('https://api.soundcloud.com/tracks/259969488', {
-            auto_play: true,
+        play = false;
+        widget.load('https://api.soundcloud.com/tracks/293137345', {
+            auto_play: false,
             hide_related: true,
             show_comments: false,
             show_user: true,
@@ -111,7 +112,9 @@ src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/29
             visual: true
         })
         widget.setVolume(volume);
-        printSongs();
+        setTimeout(function(){
+            playSC();
+        }, 500);
     }
 
     function getPrevSong() {
@@ -133,16 +136,25 @@ src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/29
             widget.setVolume(volume -= 10);
         });
     }
+
+    function playSC() {
+        widget.play();
+        document.getElementById('debug').innerHTML = "playSC";
+        document.getElementById("playPauseButton").src="https://lh3.googleusercontent.com/proxy/pL9VB6HbhJ6D-0UyJeig2GsvuqmJ8WdGxXwEHZbekhlJ-lpxPM6rdw9OTpARPEvHSJpNe9_nFu9ucMebn9a5AJCVx3P7KWkduL7IsyPmluBYgFS6xTgN45iwj5oSBDo";
+        play = true; 
+    }
+
+    function pauseSC() {
+        widget.pause();
+        document.getElementById("playPauseButton").src="https://www.pinpng.com/pngs/m/34-346993_play-free-png-image-black-play-button-png.png"; 
+        play = false;
+    }
     
     function playPause() {
     	if(play){
-        	widget.pause();
-            document.getElementById("playPauseButton").src="https://www.pinpng.com/pngs/m/34-346993_play-free-png-image-black-play-button-png.png"; 
-            play = false;
+            pauseSC();
 		} else {
-        	widget.play();
-            document.getElementById("playPauseButton").src="https://lh3.googleusercontent.com/proxy/pL9VB6HbhJ6D-0UyJeig2GsvuqmJ8WdGxXwEHZbekhlJ-lpxPM6rdw9OTpARPEvHSJpNe9_nFu9ucMebn9a5AJCVx3P7KWkduL7IsyPmluBYgFS6xTgN45iwj5oSBDo";
-            play = true; 
+            playSC();
         }
     }
 
