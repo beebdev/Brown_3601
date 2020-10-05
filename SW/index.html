@@ -1,9 +1,20 @@
 <!DOCTYPE html>
 
 <!--
-A basic website that plays youtube videos that can be controlled by a
-IR remote. Created for COMP3601 Project
+An alternative page to the COMP3601 project that uses a soundcloud widget
+to play audio instead of video. Used to implement a working solution that
+can be added to the main youtube page in the future.
 -->
+
+<!--
+TODO List:
+- Fix bug; Volume will jump to the max before returning back to set volume
+every time you load a new song
+-- Potential Solution: Change the way we are loading in the songs
+
+-->
+
+
 <html lang="en">
 
 <head>
@@ -12,12 +23,13 @@ IR remote. Created for COMP3601 Project
 
 
 <body>
-<h1>Music player (SoundCloud player)</h1>
+<h1>Audio player (SoundCloud player)</h1>
 <hr>
 
 <h3> Song id:</h3>
 <h4> Add new song</h4>
 <input type="text" id="nextSong">
+
 <button onclick= "addNewSong(); document.getElementById('nextSong').value = ''"> Add new song </button>
 <br><br>
 <button onclick= "getPrevSong()"> <img src="https://static.thenounproject.com/png/534333-200.png" width="20"> </button>
@@ -61,7 +73,7 @@ src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/29
     (function(){
 
         widget.bind(SC.Widget.Events.READY, function() {
-            widget.setVolume(volume);
+
             widget.bind(SC.Widget.Events.PLAY, function() {
                 // get information about currently playing sound
                 widget.setVolume(volume);
@@ -69,8 +81,8 @@ src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/29
                     console.log('sound ' + currentSound.get('') + 'began to play');
                 });
             });
-            // set new volume level
             
+            widget.setVolume(volume);
             printSongs();
         });
   }());
@@ -109,7 +121,6 @@ src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/29
     }
 
     function volumeUp() {
-        // get current level of volume
         volume+= 10;
         widget.getVolume(function(volume) {
             widget.setVolume(volume += 10);
@@ -117,7 +128,6 @@ src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/29
     }
 
     function volumeDown() {
-        // get current level of volume
         volume -= 10;
         widget.getVolume(function(volume) {
             widget.setVolume(volume -= 10);
