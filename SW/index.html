@@ -68,7 +68,7 @@ src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/29
 
     var songIDs = ['293137345', '259969488'];
     var index = 0;
-    var volume = 10;
+    var playerVolume = 10;
     var play = false; 
 
     (function(){
@@ -77,13 +77,13 @@ src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/29
 
             widget.bind(SC.Widget.Events.PLAY, function() {
                 // get information about currently playing sound
-                widget.setVolume(volume);
+                widget.setVolume(playerVolume);
                 widget.getCurrentSound(function(currentSound) {
                     console.log('sound ' + currentSound.get('') + 'began to play');
                 });
             });
 
-            widget.setVolume(volume);
+            widget.setVolume(playerVolume);
             printSongs();
         });
   }());
@@ -111,10 +111,14 @@ src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/29
             show_teaser: true,
             visual: true
         })
-        widget.setVolume(volume);
+        document.getElementById('debug').innerHTML = playerVolume;
+        widget.setVolume(playerVolume);
         setTimeout(function(){
             playSC();
-        }, 500);
+        }, 1000);
+        widget.getVolume(function(volume) {
+            document.getElementById('debug').innerHTML = 'current volume =' + volume;
+        });
     }
 
     function getPrevSong() {
@@ -124,17 +128,15 @@ src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/29
     }
 
     function volumeUp() {
-        volume+= 10;
-        widget.getVolume(function(volume) {
-            widget.setVolume(volume += 10);
-        });
+        playerVolume += 10;
+        widget.setVolume(playerVolume);
+        document.getElementById('debug').innerHTML = playerVolume;
     }
 
     function volumeDown() {
-        volume -= 10;
-        widget.getVolume(function(volume) {
-            widget.setVolume(volume -= 10);
-        });
+        playerVolume -= 10;
+        widget.setVolume(playerVolume);
+        document.getElementById('debug').innerHTML = playerVolume;
     }
 
     function playSC() {
