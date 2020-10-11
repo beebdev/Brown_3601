@@ -66,7 +66,9 @@ src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/29
     var widgetIframe = document.getElementById('sc-widget');
     var widget       = SC.Widget(widgetIframe);
 
-    var songIDs = ['293137345', '259969488'];
+    var songURLs = ['https://soundcloud.com/dj-regard-1/jay-sean-ride-it-regard-remix',
+                    'https://soundcloud.com/midimuppetofficial/yiruma-kiss-the-rain-free-download', 
+                   'https://soundcloud.com/danieldelaneycello/the-swan-saint-saens'];
     var index = 0;
     var playerVolume = 10;
     var play = false; 
@@ -90,19 +92,42 @@ src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/29
 
     function printSongs() {
         var txt = "";
-        document.getElementById("currSongs").innerHTML = songIDs.join("<br>");
+        document.getElementById("currSongs").innerHTML = songURLs.join("<br>");
     }
 
     function addNewSong() {
-        var videoId = document.getElementById("nextSong").value;
-        songIDs.push(videoId);
+        var songURL = document.getElementById("nextSong").value;
+        songURLs.push(songURL);
         printSongs();
     }
 
     function getNextSong() {
         index++;
         play = false;
-        widget.load('https://api.soundcloud.com/tracks/293137345', {
+        widget.load('https://soundcloud.com/dj-regard-1/jay-sean-ride-it-regard-remix', {
+            auto_play: false,
+            hide_related: true,
+            show_comments: false,
+            show_user: true,
+            show_reposts: false,
+            show_teaser: true,
+            visual: true,
+            callback: setVolume()
+        })
+    }
+
+    function setVolume() {
+        widget.setVolume(playerVolume);
+        setTimeout(function(){
+            playSC();
+        }, 1000);
+        document.getElementById('debug').innerHTML = 'this is being run!!! =';
+    }
+
+    function getPrevSong() {
+        index--;
+        play = false;
+        widget.load(songURLs[index], {
             auto_play: false,
             hide_related: true,
             show_comments: false,
@@ -115,16 +140,10 @@ src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/29
         widget.setVolume(playerVolume);
         setTimeout(function(){
             playSC();
-        }, 1000);
+        }, 2000);
         widget.getVolume(function(volume) {
             document.getElementById('debug').innerHTML = 'current volume =' + volume;
         });
-    }
-
-    function getPrevSong() {
-        index--;
-        widgetIframe.src = getUrl(songs[index]);
-        printSongs();
     }
 
     function volumeUp() {
@@ -158,10 +177,6 @@ src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/29
 		} else {
             playSC();
         }
-    }
-
-    function getUrl(id) {
-        return "https://api.soundcloud.com/tracks/" + id;
     }
 
 </script>
