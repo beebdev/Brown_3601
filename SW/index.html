@@ -79,9 +79,9 @@ src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/29
 
             widget.bind(SC.Widget.Events.PLAY, function() {
                 // get information about currently playing sound
-                widget.setVolume(playerVolume);
+
                 widget.getCurrentSound(function(currentSound) {
-                    console.log('sound ' + currentSound.get('') + 'began to play');
+                    widget.setVolume(playerVolume);
                 });
             });
 
@@ -104,7 +104,7 @@ src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/29
     function getNextSong() {
         index++;
         play = false;
-        widget.load('https://soundcloud.com/dj-regard-1/jay-sean-ride-it-regard-remix', {
+        widget.load(songURLs[index], {
             auto_play: false,
             hide_related: true,
             show_comments: false,
@@ -120,8 +120,7 @@ src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/29
         widget.setVolume(playerVolume);
         setTimeout(function(){
             playSC();
-        }, 1000);
-        document.getElementById('debug').innerHTML = 'this is being run!!! =';
+        }, 3000);
     }
 
     function getPrevSong() {
@@ -134,16 +133,9 @@ src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/29
             show_user: true,
             show_reposts: false,
             show_teaser: true,
-            visual: true
+            visual: true,
+            callback: setVolume()
         })
-        document.getElementById('debug').innerHTML = playerVolume;
-        widget.setVolume(playerVolume);
-        setTimeout(function(){
-            playSC();
-        }, 2000);
-        widget.getVolume(function(volume) {
-            document.getElementById('debug').innerHTML = 'current volume =' + volume;
-        });
     }
 
     function volumeUp() {
