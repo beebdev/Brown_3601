@@ -6,15 +6,6 @@ to play audio instead of video. Used to implement a working solution that
 can be added to the main youtube page in the future.
 -->
 
-<!--
-TODO List:
-- Fix bug; Volume will jump to the max before returning back to set volume
-every time you load a new song
--- Potential Solution: Change the way we are loading in the songs
-
--->
-
-
 <html lang="en">
 
 <head>
@@ -92,7 +83,14 @@ src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/29
 
     function printSongs() {
         var txt = "";
-        document.getElementById("currSongs").innerHTML = songURLs.join("<br>");
+        for (i = 0; i < songURLs.length; i++) {
+            var songDetails = songURLs[i].replace('https://soundcloud.com/',"");
+            var songName = songDetails.split('/')[1];
+            var artistName = songDetails.split('/')[0];
+            txt += artistName + "----" + songName + "<br>";
+        }
+
+        document.getElementById("currSongs").innerHTML = txt
     }
 
     function addNewSong() {
