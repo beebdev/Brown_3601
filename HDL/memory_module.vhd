@@ -11,6 +11,8 @@ use IEEE.STD_LOGIC_1164.ALL;
 --use UNISIM.VComponents.all;
 
 entity memory_module is
+	port (clk
+			);
 end memory_module;
 
 architecture Behavioral of memory_module is

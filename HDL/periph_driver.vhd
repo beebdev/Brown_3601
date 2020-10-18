@@ -10,10 +10,11 @@ use IEEE.STD_LOGIC_1164.ALL;
 --library UNISIM;
 --use UNISIM.VComponents.all;
 
-entity MediaBox is
-end MediaBox;
+entity periph_driver is
+	port ();
+end periph_driver;
 
-architecture Behavioral of MediaBox is
+architecture Behavioral of periph_driver is
 
 begin
 	
