@@ -11,6 +11,7 @@ can be added to the main youtube page in the future.
 <head>
 <link rel="stylesheet" href="style.css">
 <script src="https://w.soundcloud.com/player/api.js" type="text/javascript"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 </head>
 
 
@@ -18,14 +19,13 @@ can be added to the main youtube page in the future.
 <h1>Audio player (SoundCloud player)</h1>
 
 
-<h1 id = "debug"></h1>
-<h4> Add new song</h4>
-<input type="text" id="nextSong">
+<h2 id = "debug"> Debug messages </h2>
 
 
 <!-- Built in media control buttons -->
-<button onclick= "addNewSong(); document.getElementById('nextSong').value = ''"> Add new song </button>
-<br><br>
+<input type="text" id="nextSong">
+<button onclick= "addNewSong()" > Add new song </button><br><br> 
+
 <button onclick= "getPrevSong()"> <img src="https://static.thenounproject.com/png/534333-200.png" width="20"> </button>
 
 <button onclick= "getNextSong()">  <img src="https://static.thenounproject.com/png/534333-200.png" width="20" style="transform:rotate(180deg);"> </button>
@@ -34,13 +34,13 @@ can be added to the main youtube page in the future.
 
 <button onclick= "volumeUp()"> <img src="https://image.flaticon.com/icons/png/512/25/25695.png" width="20"></button>
 
-<button onclick= "playPause()"> <img src="https://www.pinpng.com/pngs/m/34-346993_play-free-png-image-black-play-button-png.png" id = "playPauseButton" width="20"></button>
+<button onclick= "playPause()"> <img id = "playPauseButton" src="https://www.pinpng.com/pngs/m/34-346993_play-free-png-image-black-play-button-png.png" width="20"></button>
 <br>
 
-
-
+<!-- Displays songs in current playlist -->
 <p id="currSongs"> </p>
 
+<!-- Soundcloud player -->
 <iframe id="sc-widget" width="100%" height="300" scrolling="no" frameborder="no" allow="autoplay" 
 src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/293137345
 &auto_play=false
@@ -52,176 +52,195 @@ src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/29
 &visual=true">
 </iframe>
 
-<div id='progressbarParent'>
-</div>
+<!-- Progress bar for changing songs -->
+<div id='progressbarParent'></div>
 
 
+<!-- 
+Javascript code for website:
+- Soundcloud player: https://developers.soundcloud.com/blog/html5-widget-api
+- Progressbar: https://developer.mozilla.org/en-US/docs/Web/CSS/animation
 
-
-<!-- Based on code from blog post: https://developers.soundcloud.com/blog/html5-widget-api-->
+-->
 <script type="text/javascript">
 
-    var widgetIframe = document.getElementById('sc-widget');
-    var widget       = SC.Widget(widgetIframe);
+var songURLs = ['https://soundcloud.com/dj-regard-1/jay-sean-ride-it-regard-remix',
+                'https://soundcloud.com/midimuppetofficial/yiruma-kiss-the-rain-free-download', 
+                'https://soundcloud.com/danieldelaneycello/the-swan-saint-saens'];
 
-    var songURLs = ['https://soundcloud.com/dj-regard-1/jay-sean-ride-it-regard-remix',
-                    'https://soundcloud.com/midimuppetofficial/yiruma-kiss-the-rain-free-download', 
-                   'https://soundcloud.com/danieldelaneycello/the-swan-saint-saens'];
-    var index = 0;
-    var playerVolume = 10;
-    var play = false; 
+// Global variables
+var index = 0;
+var numSongs = 3;
+var playerVolume = 10;
+var play = false; 
 
+var widgetIframe = document.getElementById('sc-widget');
+var widget       = SC.Widget(widgetIframe);
 
-    function createProgressbar(id, duration, callback) {
+// Binding Souncloud player events
+widget.bind(SC.Widget.Events.READY, function() {
 
-        var progressbarParent = document.getElementById(id);
-
-        var progressbar = document.createElement('div');
-        progressbar.id = 'progressbar';
-        progressbar.className = 'progressbar';
-
-        var progressbarinner = document.createElement('div');
-        progressbarinner.className = 'inner';
-
-        progressbarinner.style.animationDuration = duration;
-
-        if (typeof(callback) === 'function') {
-            progressbarinner.addEventListener('animationend', callback);
-        }
-
-        progressbar.appendChild(progressbarinner);
-        progressbarParent.appendChild(progressbar);
-
-        progressbarinner.style.animationPlayState = 'running';
-    }
-
-
-
-    widget.bind(SC.Widget.Events.READY, function() {
-
-        widget.bind(SC.Widget.Events.PLAY, function() {
-            widget.getCurrentSound(function(currentSound) {
-                widget.setVolume(playerVolume);
-            });
+    widget.bind(SC.Widget.Events.PLAY, function() {
+        widget.getCurrentSound(function(currentSound) {
+            widget.setVolume(playerVolume);
         });
-
-        widget.setVolume(playerVolume);
-        printSongs();
     });
 
+    printSongs();
+    widget.setVolume(playerVolume);
+});
 
-    function printSongs() {
-        
-        var txt = "";
-        for (i = 0; i < songURLs.length; i++) {
-            var songDetails = songURLs[i].replace('https://soundcloud.com/',"");
-            var songName = songDetails.split('/')[1];
-            var artistName = songDetails.split('/')[0];
-            txt += artistName + "----" + songName + "<br>";
-        }
-        document.getElementById("currSongs").innerHTML = txt;
-        /*
-        var xhttp = new XMLHttpRequest();
-        xhttp.onreadystatechange = function() {
-            if (this.readyState == 4 && this.status == 200) {
-            document.getElementById("songLabel").innerHTML = txt;
-            }
-        };
-        xhttp.send();
-        */
-    }
 
-    function addNewSong() {
-        var songURL = document.getElementById("nextSong").value;
-        songURLs.push(songURL);
-        printSongs();
-    }
+$(document).ready(function(){
+  $("button").click(function(){
+    $("#debug2").hide();
+  });
+});
 
-    function getNextSong() {
-        index++;
-        widget.load(songURLs[index], {
-            auto_play: false,
-            hide_related: true,
-            show_comments: false,
-            show_user: true,
-            show_reposts: false,
-            show_teaser: true,
-            visual: true,
-            callback: changeSong()
-        })
-    }
 
-    function getPrevSong() {
-        index--;
-        widget.load(songURLs[index], {
-            auto_play: false,
-            hide_related: true,
-            show_comments: false,
-            show_user: true,
-            show_reposts: false,
-            show_teaser: true,
-            visual: true,
-            callback: changeSong()
-        })
-    }
 
-    function changeSong() {
-
-        widget.setVolume(playerVolume);
-        createProgressbar('progressbarParent', '3s', function() {
-            var bar = document.getElementById('progressbar');
-            bar.parentNode.removeChild(bar);
-            
-            if(play) { playSC(); }
-        });
-    }
-
-    function volumeUp() {
-        
-        playerVolume += 10;
-        widget.setVolume(playerVolume);
-        document.getElementById('debug').innerHTML = playerVolume;
-        
-        /*
-        var xhttp = new XMLHttpRequest();
-        xhttp.onreadystatechange = function() {
-            if (this.readyState == 4 && this.status == 200) {
-                playerVolume += 10;
-                widget.setVolume(playerVolume);
-                document.getElementById('debug').innerHTML = playerVolume;
-            }
-        };
-        xhttp.open("GET", "volume", true);
-        xhttp.send();
-        */
-    }
-
-    function volumeDown() {
-        playerVolume -= 10;
-        widget.setVolume(playerVolume);
-        document.getElementById('debug').innerHTML = playerVolume;
-    }
-
-    function playSC() {
-        widget.play();
-        document.getElementById('debug').innerHTML = "playSC";
-        document.getElementById("playPauseButton").src="https://lh3.googleusercontent.com/proxy/pL9VB6HbhJ6D-0UyJeig2GsvuqmJ8WdGxXwEHZbekhlJ-lpxPM6rdw9OTpARPEvHSJpNe9_nFu9ucMebn9a5AJCVx3P7KWkduL7IsyPmluBYgFS6xTgN45iwj5oSBDo";
-        play = true; 
-    }
-
-    function pauseSC() {
-        widget.pause();
-        document.getElementById("playPauseButton").src="https://www.pinpng.com/pngs/m/34-346993_play-free-png-image-black-play-button-png.png"; 
-        play = false;
-    }
+function printSongs() {
     
-    function playPause() {
-    	if(play){
-            pauseSC();
-		} else {
-            playSC();
-        }
+    var txt = "";
+    for (i = 0; i < songURLs.length; i++) {
+        var songDetails = songURLs[i].replace('https://soundcloud.com/',"");
+        var songName = songDetails.split('/')[1];
+        var artistName = songDetails.split('/')[0];
+        txt += artistName + "----" + songName + "<br>";
     }
+    document.getElementById("currSongs").innerHTML = txt;
+    /*
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+        document.getElementById("songLabel").innerHTML = txt;
+        }
+    };
+    xhttp.send();
+    */
+}
+
+function addNewSong() {
+    var songURL = document.getElementById("nextSong").value;
+    songURLs.push(songURL);
+    printSongs();
+    numSongs++;
+}
+
+function getNextSong() {
+    index++;
+
+    if(index == numSongs) { index = 0;}
+
+    widget.load(songURLs[index], {
+        auto_play: false,
+        hide_related: true,
+        show_comments: false,
+        show_user: true,
+        show_reposts: false,
+        show_teaser: true,
+        visual: true,
+        callback: changeSong()
+    })
+}
+
+function getPrevSong() {
+    index--;
+
+    if(index == -1) {index = numSongs - 1;}
+
+    widget.load(songURLs[index], {
+        auto_play: false,
+        hide_related: true,
+        show_comments: false,
+        show_user: true,
+        show_reposts: false,
+        show_teaser: true,
+        visual: true,
+        callback: changeSong()
+    })
+}
+
+function changeSong() {
+
+    widget.setVolume(playerVolume);
+    createProgressbar('progressbarParent', '3s', function() {
+        var bar = document.getElementById('progressbar');
+        bar.parentNode.removeChild(bar);
+        
+        if(play) { playSC(); }
+    });
+}
+
+function volumeUp() {
+    
+    playerVolume += 10;
+    widget.setVolume(playerVolume);
+    document.getElementById('debug').innerHTML = playerVolume;
+    
+    /*
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            playerVolume += 10;
+            widget.setVolume(playerVolume);
+            document.getElementById('debug').innerHTML = playerVolume;
+        }
+    };
+    xhttp.open("GET", "volume", true);
+    xhttp.send();
+    */
+}
+
+function volumeDown() {
+    playerVolume -= 10;
+    widget.setVolume(playerVolume);
+    document.getElementById('debug').innerHTML = playerVolume;
+}
+
+function playSC() {
+    widget.play();
+    document.getElementById('debug').innerHTML = "playSC";
+    document.getElementById("playPauseButton").src="https://lh3.googleusercontent.com/proxy/pL9VB6HbhJ6D-0UyJeig2GsvuqmJ8WdGxXwEHZbekhlJ-lpxPM6rdw9OTpARPEvHSJpNe9_nFu9ucMebn9a5AJCVx3P7KWkduL7IsyPmluBYgFS6xTgN45iwj5oSBDo";
+    play = true; 
+}
+
+function pauseSC() {
+    widget.pause();
+    document.getElementById("playPauseButton").src="https://www.pinpng.com/pngs/m/34-346993_play-free-png-image-black-play-button-png.png"; 
+    play = false;
+}
+
+function playPause() {
+    if(play){
+        pauseSC();
+    } else {
+        playSC();
+    }
+}
+
+function createProgressbar(id, duration, callback) {
+
+    var progressbarParent = document.getElementById(id);
+
+    var progressbar = document.createElement('div');
+    progressbar.id = 'progressbar';
+    progressbar.className = 'progressbar';
+
+    var progressbarinner = document.createElement('div');
+    progressbarinner.className = 'inner';
+
+    progressbarinner.style.animationDuration = duration;
+
+    if (typeof(callback) === 'function') {
+        progressbarinner.addEventListener('animationend', callback);
+    }
+
+    progressbar.appendChild(progressbarinner);
+    progressbarParent.appendChild(progressbar);
+
+    progressbarinner.style.animationPlayState = 'running';
+}
 
 </script>
 </body>
