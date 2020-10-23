@@ -1,1 +1,0 @@
-void mqtt_client_task(void *arg);
