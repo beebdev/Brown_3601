@@ -90,9 +90,7 @@ void spi_slave_task(void *arg) {
         t.rx_buffer = recvbuf;
         t.tx_buffer = sendbuf;
         
-        printf("[spi_slave] Starting transaction...");
         ret = spi_slave_transmit(HSPI_HOST, &t, portMAX_DELAY);
-        printf("Done\n");
         
         printf("[spi_slave] Received: %04x %04x\n", recvbuf[0], recvbuf[1]);
         n++;

@@ -8,7 +8,7 @@ void mqtt_client_task(void *arg) {
     while (1) {
         cnt++;
         if (cnt % 100 == 0) {
-            printf("mqtt_client\n");
+            // printf("mqtt_client\n");
             cnt = 0;
         }
         vTaskDelay(1);

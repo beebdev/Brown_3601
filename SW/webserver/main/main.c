@@ -27,6 +27,6 @@
 void app_main(void) {
     vTaskDelay(pdMS_TO_TICKS(100));
     xTaskCreatePinnedToCore(webserver_task, "web_server", 4096, NULL, 4, NULL, 0);
-    xTaskCreatePinnedToCore(spi_slave_task, "spi_slave", 4096, NULL, 3, NULL, 1);
-    xTaskCreatePinnedToCore(mqtt_client_task, "mqtt_client", 2048, NULL, 3, NULL, 1);
+    xTaskCreatePinnedToCore(spi_slave_task, "spi_slave", 2048, NULL, 3, NULL, 1);
+    xTaskCreatePinnedToCore(mqtt_client_task, "mqtt_client", 4096, NULL, 3, NULL, 1);
 }
