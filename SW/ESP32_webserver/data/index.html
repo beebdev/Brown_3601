@@ -1,46 +1,289 @@
 <!DOCTYPE html>
+
 <!--
-A basic website that plays youtube videos that can be controlled by a
-IR remote. Created for COMP3601 Project
+An alternative page to the COMP3601 project that uses a soundcloud widget
+to play audio instead of video. Used to implement a working solution that
+can be added to the main youtube page in the future.
 -->
+
 <html lang="en">
 
 <head>
 <link rel="stylesheet" href="style.css">
+<script src="https://w.soundcloud.com/player/api.js" type="text/javascript"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+<!-- Websocket code-->
+<script>
+    var gateway = `ws://${window.location.hostname}/ws`;
+    var websocket;
+    function initWebSocket() {
+      console.log('Trying to open a WebSocket connection...');
+      websocket = new WebSocket(gateway);
+      websocket.onopen    = onOpen;
+      websocket.onclose   = onClose;
+      websocket.onmessage = onMessage; // <-- add this line
+    }
+    function onOpen(event) {
+      console.log('Connection opened');
+    }
+  
+    function onClose(event) {
+      console.log('Connection closed');
+      setTimeout(initWebSocket, 2000);
+    }
+    function onMessage(event) {
+      var state;
+      if (event.data == "1"){
+        playSC();
+      }
+      else{
+        pauseSC();
+      }
+    }
+  
+    window.addEventListener('load', onLoad);
+  
+    function onLoad(event) {
+      initWebSocket();
+    }
+  
+    /*
+    function toggle(){
+      websocket.send('toggle');
+    }
+    */ 
+  </script>
 </head>
 
 
 <body>
-<h1>Music player</h1>
-<hr>
+<h1>Audio player (SoundCloud player)</h1>
 
-<h3> Song id:</h3>
-<h4> Add new song</h4>
+
+<h2 id = "debug"> Debug messages </h2>
+
+
+<!-- Built in media control buttons -->
 <input type="text" id="nextSong">
-<button onclick= "addNewSong()"> Add new song </button>
-<br><br>
-<button onclick= "getNextSong()"> Play next song </button>
-<button onclick= "getPrevSong()"> Play previous song </button>
-<button onclick= "volumeUp()"> Volume Up </button>
-<button onclick= "volumeDown()"> Volume down </button>
+<button onclick= "addNewSong()" > Add new song </button><br><br> 
+
+<button onclick= "getPrevSong()"> <img src="https://static.thenounproject.com/png/534333-200.png" width="20"> </button>
+
+<button onclick= "getNextSong()">  <img src="https://static.thenounproject.com/png/534333-200.png" width="20" style="transform:rotate(180deg);"> </button>
+
+<button onclick= "volumeDown()"> <img src="https://www.freeiconspng.com/uploads/volume-icon-19.png" width="20"> </button>
+
+<button onclick= "volumeUp()"> <img src="https://image.flaticon.com/icons/png/512/25/25695.png" width="20"></button>
+
+<button onclick= "playPause()"> <img id = "playPauseButton" src="https://www.pinpng.com/pngs/m/34-346993_play-free-png-image-black-play-button-png.png" width="20"></button>
 <br>
 
-<p id="currSongs"></p>
+<!-- Displays songs in current playlist -->
+<p id="currSongs"> </p>
 
-<!-- For some reason, some videos on youtube will come up with a video 
-unavailable error msg-->
-
-<!-- Iframe tag implementation
-
-<iframe id="player" width = "1000" height = "600"
-src="https://www.youtube.com/embed/PWK8EuUSMSI?autoplay=1" frameborder="0" allowfullscreen>
+<!-- Soundcloud player -->
+<iframe id="sc-widget" width="100%" height="300" scrolling="no" frameborder="no" allow="autoplay" 
+src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/293137345
+&auto_play=false
+&hide_related=false
+&show_comments=false
+&show_user=true
+&show_reposts=false
+&show_teaser=true
+&visual=true">
 </iframe>
 
+<!-- Progress bar for changing songs -->
+<div id='progressbarParent'></div>
+
+
+<!-- 
+Javascript code for website:
+- Soundcloud player: https://developers.soundcloud.com/blog/html5-widget-api
+- Progressbar: https://developer.mozilla.org/en-US/docs/Web/CSS/animation
+
 -->
+<script type="text/javascript">
 
-<video width="320" height="240" controls src="https://www.youtube.com/embed/1Yc6Kttxon4">
-    Your browser does not support the video tag.
-</video>
+var songURLs = ['https://soundcloud.com/dj-regard-1/jay-sean-ride-it-regard-remix',
+                'https://soundcloud.com/midimuppetofficial/yiruma-kiss-the-rain-free-download', 
+                'https://soundcloud.com/danieldelaneycello/the-swan-saint-saens'];
 
+// Global variables
+var index = 0;
+var numSongs = 3;
+var playerVolume = 10;
+var play = false; 
+
+var widgetIframe = document.getElementById('sc-widget');
+var widget       = SC.Widget(widgetIframe);
+
+// Binding Souncloud player events
+widget.bind(SC.Widget.Events.READY, function() {
+
+    widget.bind(SC.Widget.Events.PLAY, function() {
+        widget.getCurrentSound(function(currentSound) {
+            widget.setVolume(playerVolume);
+        });
+    });
+
+    printSongs();
+    widget.setVolume(playerVolume);
+});
+
+
+$(document).ready(function(){
+  $("button").click(function(){
+    $("#debug2").hide();
+  });
+});
+
+
+
+function printSongs() {
+    
+    var txt = "";
+    for (i = 0; i < songURLs.length; i++) {
+        var songDetails = songURLs[i].replace('https://soundcloud.com/',"");
+        var songName = songDetails.split('/')[1];
+        var artistName = songDetails.split('/')[0];
+        txt += artistName + "----" + songName + "<br>";
+    }
+    document.getElementById("currSongs").innerHTML = txt;
+    /*
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+        document.getElementById("songLabel").innerHTML = txt;
+        }
+    };
+    xhttp.send();
+    */
+}
+
+function addNewSong() {
+    var songURL = document.getElementById("nextSong").value;
+    songURLs.push(songURL);
+    printSongs();
+    numSongs++;
+}
+
+function getNextSong() {
+    index++;
+
+    if(index == numSongs) { index = 0;}
+
+    widget.load(songURLs[index], {
+        auto_play: false,
+        hide_related: true,
+        show_comments: false,
+        show_user: true,
+        show_reposts: false,
+        show_teaser: true,
+        visual: true,
+        callback: changeSong()
+    })
+}
+
+function getPrevSong() {
+    index--;
+
+    if(index == -1) {index = numSongs - 1;}
+
+    widget.load(songURLs[index], {
+        auto_play: false,
+        hide_related: true,
+        show_comments: false,
+        show_user: true,
+        show_reposts: false,
+        show_teaser: true,
+        visual: true,
+        callback: changeSong()
+    })
+}
+
+function changeSong() {
+
+    widget.setVolume(playerVolume);
+    createProgressbar('progressbarParent', '3s', function() {
+        var bar = document.getElementById('progressbar');
+        bar.parentNode.removeChild(bar);
+        
+        if(play) { playSC(); }
+    });
+}
+
+function volumeUp() {
+    
+    playerVolume += 10;
+    widget.setVolume(playerVolume);
+    document.getElementById('debug').innerHTML = playerVolume;
+    
+    /*
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            playerVolume += 10;
+            widget.setVolume(playerVolume);
+            document.getElementById('debug').innerHTML = playerVolume;
+        }
+    };
+    xhttp.open("GET", "volume", true);
+    xhttp.send();
+    */
+}
+
+function volumeDown() {
+    playerVolume -= 10;
+    widget.setVolume(playerVolume);
+    document.getElementById('debug').innerHTML = playerVolume;
+}
+
+function playSC() {
+    widget.play();
+    document.getElementById('debug').innerHTML = "playSC";
+    document.getElementById("playPauseButton").src="https://lh3.googleusercontent.com/proxy/pL9VB6HbhJ6D-0UyJeig2GsvuqmJ8WdGxXwEHZbekhlJ-lpxPM6rdw9OTpARPEvHSJpNe9_nFu9ucMebn9a5AJCVx3P7KWkduL7IsyPmluBYgFS6xTgN45iwj5oSBDo";
+    play = true; 
+}
+
+function pauseSC() {
+    widget.pause();
+    document.getElementById("playPauseButton").src="https://www.pinpng.com/pngs/m/34-346993_play-free-png-image-black-play-button-png.png"; 
+    play = false;
+}
+
+function playPause() {
+    if(play){
+        pauseSC();
+    } else {
+        playSC();
+    }
+}
+
+function createProgressbar(id, duration, callback) {
+
+    var progressbarParent = document.getElementById(id);
+
+    var progressbar = document.createElement('div');
+    progressbar.id = 'progressbar';
+    progressbar.className = 'progressbar';
+
+    var progressbarinner = document.createElement('div');
+    progressbarinner.className = 'inner';
+
+    progressbarinner.style.animationDuration = duration;
+
+    if (typeof(callback) === 'function') {
+        progressbarinner.addEventListener('animationend', callback);
+    }
+
+    progressbar.appendChild(progressbarinner);
+    progressbarParent.appendChild(progressbar);
+
+    progressbarinner.style.animationPlayState = 'running';
+}
+
+</script>
 </body>
 </html>
