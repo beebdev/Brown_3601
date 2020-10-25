@@ -1,8 +1,6 @@
-idf_component_register(SRCS "rest_server.c" "main.c" 
-                            "brown_mqtt_client.c"
+idf_component_register(SRCS "keep_alive.c" "rest_server.c" "main.c" 
                             "brown_spi_slave.c"
-                            "brown_webserver.c"
-                            "rest_server.c"
+                            
                     INCLUDE_DIRS "." "${CMAKE_CURRENT_SOURCE_DIR}/../include")
 
 if(CONFIG_EXAMPLE_WEB_DEPLOY_SF)
