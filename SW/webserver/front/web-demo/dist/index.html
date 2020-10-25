@@ -48,6 +48,32 @@ src="https://www.youtube.com/embed/1Yc6Kttxon4?autoplay=1" frameborder="0" allow
 <div id="player"></div>
 
 <script>
+    /* Websocket setup */
+    var gateway = 'ws://${window.location.hostname}/ws';
+    var websocket;
+
+    function initWebSocket() {
+        console.log('Trying to open a WebSocket connection...');
+        websocket = new WebSocket(gateway);
+        websocket.onopen = onOpen;
+        websocket.onclose = onClose;
+        websocket.onmessage = onMessage;
+    }
+
+    function onOpen(event) {
+        console.log('Connection opened');
+    }
+
+    function onClose(event ) {
+        console.log('Connection closed');
+        setTimeout(initWebSocket, 2000);
+    }
+
+    function onMessage(event) {
+        console.log(event.data);
+    }
+
+    /* Video playback */
     var songs = ['_6pyzdiG1g0'];
     var index = 0;
     var play = true; 
