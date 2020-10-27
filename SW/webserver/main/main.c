@@ -1,11 +1,3 @@
-/* Hello World Example
-
-   This example code is in the Public Domain (or CC0 licensed, at your option.)
-
-   Unless required by applicable law or agreed to in writing, this
-   software is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
-   CONDITIONS OF ANY KIND, either express or implied.
-*/
 #include <stdio.h>
 #include <stdint.h>
 #include <stddef.h>
@@ -35,7 +27,7 @@
 #include "driver/gpio.h"
 #include "protocol_examples_common.h"
 #include "brown_spi_slave.h"
-
+#include "rest_server.h"
 
 #if CONFIG_EXAMPLE_WEB_DEPLOY_SD
 #include "driver/sdmmc_host.h"
@@ -45,7 +37,6 @@
 
 static const char *TAG = "http_ws_server";
 
-esp_err_t start_rest_server(const char *base_path);
 
 #if CONFIG_EXAMPLE_WEB_DEPLOY_SEMIHOST
 esp_err_t init_fs(void)
@@ -143,7 +134,7 @@ static void initialise_mdns(void)
 
 void app_main(void) {
     vTaskDelay(pdMS_TO_TICKS(100));
-    xTaskCreatePinnedToCore(spi_slave_task, "spi_slave", 2048, NULL, 3, NULL, 1);
+    xTaskCreatePinnedToCore(spi_slave_task, "spi_slave", 4096, NULL, 6, NULL, 1);
     
     
     ESP_ERROR_CHECK(nvs_flash_init());
@@ -155,5 +146,5 @@ void app_main(void) {
     
     ESP_ERROR_CHECK(example_connect());
     ESP_ERROR_CHECK(init_fs());
-    ESP_ERROR_CHECK(start_rest_server(CONFIG_EXAMPLE_WEB_MOUNT_POINT));
+    ESP_ERROR_CHECK(start_rest_server(CONFIG_EXAMPLE_WEB_MOUNT_POINT));;
 }

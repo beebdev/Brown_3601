@@ -8,5 +8,11 @@
     "editor.quickSuggestions": true
   },
   "C_Cpp.intelliSenseEngineFallback": "Enabled",
-  "idf.port": "/dev/ttyS6"
+  "idf.port": "/dev/ttyS6",
+  "files.associations": {
+    "esp_https_server.h": "c",
+    "esp_http_server.h": "c",
+    "*.inc": "c",
+    "complex": "c"
+  }
 }

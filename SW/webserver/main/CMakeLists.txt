@@ -1,5 +1,6 @@
-idf_component_register(SRCS "keep_alive.c" "rest_server.c" "main.c" 
+idf_component_register(SRCS "rest_server.c" "main.c" 
                             "brown_spi_slave.c"
+                            "keep_alive.c"
                             
                     INCLUDE_DIRS "." "${CMAKE_CURRENT_SOURCE_DIR}/../include")
 

@@ -1,15 +1,16 @@
 #pragma once
 
-#define KEEP_ALIVE_CONFIG_DEFAULT() {       \
+#define KEEP_ALIVE_CONFIG_DEFAULT()         \
+    {                                       \
     .max_clients = 10,                      \
     .task_stack_size = 2048,                \
     .task_prio = tskIDLE_PRIORITY+1,        \
-    .keep_alive_period_ms = 5000,           \
-    .not_alive_after_ms = 10000,            \
+    .keep_alive_period_ms = 3000,           \
+    .not_alive_after_ms = 6000,            \
 }
 
 struct ws_keep_alive_storage;
-typedef struct ss_keep_alive_storage* ws_keep_alive_t;
+typedef struct ws_keep_alive_storage* ws_keep_alive_t;
 typedef bool (*ws_check_client_alive_cb_t)(ws_keep_alive_t h, int fd);
 typedef bool (*ws_client_not_alive_cb_t)(ws_keep_alive_t h, int fd);
 
@@ -22,8 +23,8 @@ typedef struct {
     size_t task_prio;                                        /*!< priority of the created task */
     size_t keep_alive_period_ms;                             /*!< check every client after this time */
     size_t not_alive_after_ms;                               /*!< consider client not alive after this time */
-    ws_check_client_alive_cb_t check_client_alive_cb;       /*!< callback function to check if client is alive */
-    ws_client_not_alive_cb_t client_not_alive_cb;           /*!< callback function to notify that the client is not alive */
+    ws_check_client_alive_cb_t check_client_alive_cb;        /*!< callback function to check if client is alive */
+    ws_client_not_alive_cb_t client_not_alive_cb;            /*!< callback function to notify that the client is not alive */
     void *user_ctx;                                          /*!< user context available in the keep-alive handle */
 } ws_keep_alive_config_t;
 
@@ -85,3 +86,5 @@ void ws_keep_alive_set_user_ctx(ws_keep_alive_t h, void *ctx);
  * @return ctx user context
  */
 void* ws_keep_alive_get_user_ctx(ws_keep_alive_t h);
+
+esp_err_t ws_get_client_list(ws_keep_alive_t h, int *client_fds);

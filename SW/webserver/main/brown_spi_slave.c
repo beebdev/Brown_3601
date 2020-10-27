@@ -19,6 +19,7 @@
 #include "driver/gpio.h"
 
 #include "brown_spi_slave.h"
+#include "rest_server.h"
 
 /* Called after a transaction is queued and ready for pickup by master.
    We use this to set the handshake line high. */
@@ -91,8 +92,13 @@ void spi_slave_task(void *arg) {
         t.tx_buffer = sendbuf;
         
         ret = spi_slave_transmit(HSPI_HOST, &t, portMAX_DELAY);
-        
-        printf("[spi_slave] Received: %04x %04x\n", recvbuf[0], recvbuf[1]);
+        printf("[spi_slave] Received: %04x\n", *recvbuf);
+        printf("[spi_slave] Sending data to clients...\n");
+        if (ws_server_notify_all(*((uint32_t *)recvbuf)) == ESP_OK) {
+            printf("Done!\n");
+        } else {
+            printf("Failed.\n");
+        }
         n++;
     }
 }

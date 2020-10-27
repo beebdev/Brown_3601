@@ -28,6 +28,9 @@ IR remote. Created for COMP3601 Project
 <button onclick= "volumeUp()"> <img src="https://image.flaticon.com/icons/png/512/25/25695.png" width="20"></button>
 
 <button onclick= "playPause()"> <img src="https://lh3.googleusercontent.com/proxy/pL9VB6HbhJ6D-0UyJeig2GsvuqmJ8WdGxXwEHZbekhlJ-lpxPM6rdw9OTpARPEvHSJpNe9_nFu9ucMebn9a5AJCVx3P7KWkduL7IsyPmluBYgFS6xTgN45iwj5oSBDo" id = "playPauseButton" width="20"></button>
+
+<button onclick= "initWebSocket()"> init </button>
+<button onclick= "send_hello()"> hello </button>
 <br>
 
 <p id="currSongs"></p>
@@ -49,7 +52,7 @@ src="https://www.youtube.com/embed/1Yc6Kttxon4?autoplay=1" frameborder="0" allow
 
 <script>
     /* Websocket setup */
-    var gateway = 'ws://${window.location.hostname}/ws';
+    var gateway = 'ws://brownbox.local/ws';
     var websocket;
 
     function initWebSocket() {
@@ -64,13 +67,19 @@ src="https://www.youtube.com/embed/1Yc6Kttxon4?autoplay=1" frameborder="0" allow
         console.log('Connection opened');
     }
 
-    function onClose(event ) {
+    function onClose(event) {
         console.log('Connection closed');
         setTimeout(initWebSocket, 2000);
     }
 
     function onMessage(event) {
+        console.log('received data:');
         console.log(event.data);
+    }
+
+    function send_hello(event) {
+        websocket.send('Hello');
+        console.log('Sending hello');
     }
 
     /* Video playback */
