@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+
+<!--
+An alternative page to the COMP3601 project that uses a soundcloud widget
+to play audio instead of video. Used to implement a working solution that
+can be added to the main youtube page in the future.
+-->
+
+<html lang="en">
+<head>
+    <title>SoundCloud Player</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://w.soundcloud.com/player/api.js" type="text/javascript"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+
+<body>
+    <div id="mySidebar" class="sidebar">
+        <a href="javascript:void(0)" class="closebtn" onclick="closeMenu()">×</a>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="youtube.html">Youtube Player</a></li>
+        <li><div class="active"></div><a href="soundcloud.html" style="color:white; clear:left; padding:20px">SoundCloud Player</a></li>
+    </div>
+    <div id="main">
+        <div class = "menu">
+            <button class="openbtn" onclick="openMenu()">☰</button>
+        </div>
+        <div class = "header">
+            <img src = "soundcloudicon2.png" width ="200px">
+            <br>
+            <img src="soundcloud.png">
+        </div>
+
+<!-- <h2 id = "debug"> Debug messages </h2> -->
+
+        <!-- Built in media control buttons -->
+        <div class = content>
+            <h3> Enter a SoundCloud URL to add a new song:</h3>
+            <input type="text" id="nextSong">
+            <br>
+            <br>
+            <button class ="button button2" onclick= "addNewSong(); document.getElementById('nextSong').value = ''"><b> + ADD NEW SONG  </b></button>
+            <br>
+
+            <!-- Displays songs in current playlist -->
+            <table style="width:100%;"> 
+                <tr style="width:100%;">
+                    <td style="width:21%;"></td>
+                    <td style="width:29%; text-align: left;  padding:1%">
+                        <h3>Song</h3>
+                        <div class="underline"></div> 
+                        <p id="song"></p>
+                    </td>
+                    <td style="width:29%; text-align: left; padding:1%">
+                        <h3>Artist</h3>
+                        <div class="underline"></div> 
+                        <p id = "artist"></p>
+                    </td>
+                    <td style="width:21%;"></td>
+                </tr>
+            </table>
+            
+            <!-- Progress bar for changing songs -->
+            <div id='progressbarParent'></div>
+
+            <!-- Soundcloud player -->
+            <!-- Soundcloud player -->
+            <iframe id="sc-widget" width="100%" height="300" scrolling="no" frameborder="no" allow="autoplay" 
+            src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/293137345
+&auto_play=false
+&hide_related=false
+&show_comments=false
+&show_user=true
+&show_reposts=false
+&show_teaser=true
+&visual=true">
+            </iframe>
+        </div>
+
+        
+        <div class = "bar">
+            <br>
+            <table style="width:100%">
+                <tr>
+                    <td style="width:30%; text-align: left;"> 
+                    </td>
+                    <td style="width:30%; text-align: center;"> 
+                        <button class ="button button1" onclick= "getPrevSong()"> <img src="prev.png" width="20"> </button>
+                        <button class ="button button1" onclick= "playPause()"> <img src="play.png" id = "playPauseButton" width="20"></button>   
+                        <button class ="button button1" onclick= "getNextSong()">  <img src="next.png" width="20"> </button>       
+                    </td>
+                    <td style="width:30%; text-align: right;"> 
+                        <div class = "sound">
+                            <button id="muteButton" class ="button button1" onclick= "mute()"> <img src="mute.png" width="20"></button>
+                            <button class ="button button1" onclick= "volumeDown()"> <img src="volumeDown.png" width="20"> </button>               
+                            <button class ="button button1" onclick= "volumeUp()"> <img src="volumeUp.png" width="20"></button>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+            <br>
+        </div>
+    </div>
+</body>
+
+
+<!-- 
+Javascript code for website:
+- Soundcloud player: https://developers.soundcloud.com/blog/html5-widget-api
+- Progressbar: https://developer.mozilla.org/en-US/docs/Web/CSS/animation
+
+-->
+<script type="text/javascript">
+
+    var songURLs = ['https://soundcloud.com/dj-regard-1/jay-sean-ride-it-regard-remix',
+                    'https://soundcloud.com/midimuppetofficial/yiruma-kiss-the-rain-free-download', 
+                    'https://soundcloud.com/danieldelaneycello/the-swan-saint-saens'];
+
+    // Global variables
+    var index = 0;
+    var numSongs = 3;
+    var playerVolume = 10;
+    var play = false; 
+    var muted = false; 
+
+    var widgetIframe = document.getElementById('sc-widget');
+    var widget = SC.Widget(widgetIframe);
+
+    // Binding Souncloud player events
+    widget.bind(SC.Widget.Events.READY, function() {
+        widget.bind(SC.Widget.Events.PLAY, function() {
+            widget.getCurrentSound(function(currentSound) {
+                widget.setVolume(playerVolume);
+            });
+        });
+        printSongs();
+        widget.setVolume(playerVolume);
+    });
+
+
+    $(document).ready(function(){
+        $("button").click(function(){
+            $("#debug2").hide();
+        });
+    });
+
+
+
+    function printSongs() {
+        var txt = "";
+        var txt2 = "";
+        for (i = 0; i < songURLs.length; i++) {
+            var songDetails = songURLs[i].replace('https://soundcloud.com/',"");
+            var songName = songDetails.split('/')[1];
+            var artistName = songDetails.split('/')[0];
+            txt += artistName + "<br>" + "<br>";
+            txt2 += songName + "<br>" + "<br>";
+        }
+        document.getElementById("artist").innerHTML = txt;
+        document.getElementById("song").innerHTML = txt2;
+        /*
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+            document.getElementById("songLabel").innerHTML = txt;
+            }
+        };
+        xhttp.send();
+        */
+    }
+
+    function addNewSong() {
+        var songURL = document.getElementById("nextSong").value;
+        songURLs.push(songURL);
+        printSongs();
+        numSongs++;
+    }
+
+    function getNextSong() {
+        index++;
+        if(index == numSongs) { index = 0;}
+        widget.load(songURLs[index], {
+            auto_play: false,
+            hide_related: true,
+            show_comments: false,
+            show_user: true,
+            show_reposts: false,
+            show_teaser: true,
+            visual: true,
+            callback: changeSong()
+        })
+    }
+
+    function getPrevSong() {
+        index--;
+        if(index == -1) {index = numSongs - 1;}
+        widget.load(songURLs[index], {
+            auto_play: false,
+            hide_related: true,
+            show_comments: false,
+            show_user: true,
+            show_reposts: false,
+            show_teaser: true,
+            visual: true,
+            callback: changeSong()
+        })
+    }
+
+    function changeSong() {
+        widget.setVolume(playerVolume);
+        createProgressbar('progressbarParent', '3s', function() {
+            var bar = document.getElementById('progressbar');
+            bar.parentNode.removeChild(bar);
+            if(play) { playSC(); }
+        });
+    }
+
+    function volumeUp() {   
+        playerVolume += 10;
+        if(playerVolume== 10 || muted){
+            muted = false; 
+            document.getElementById("muteButton").classList.remove('button1Selected');
+        }
+        widget.setVolume(playerVolume);
+        document.getElementById('debug').innerHTML = playerVolume;
+        /*
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+                playerVolume += 10;
+                widget.setVolume(playerVolume);
+                document.getElementById('debug').innerHTML = playerVolume;
+            }
+        };
+        xhttp.open("GET", "volume", true);
+        xhttp.send();
+        */
+    }
+
+    function volumeDown() {
+        playerVolume -= 10;
+        if(playerVolume == 0 || playerVolume < 0){
+            playerVolume = 0; 
+            muted = true; 
+            document.getElementById("muteButton").classList.add('button1Selected');
+        }
+        widget.setVolume(playerVolume);
+        document.getElementById('debug').innerHTML = playerVolume;
+    }
+
+    function playSC() {
+        widget.play();
+        //document.getElementById('debug').innerHTML = "playSC";
+        document.getElementById("playPauseButton").src="pause.png";
+        play = true; 
+    }
+
+    function pauseSC() {
+        widget.pause();
+        document.getElementById("playPauseButton").src="play.png"; 
+        play = false;
+    }
+
+    function playPause() {
+        if(play){
+            pauseSC();
+        } else {
+            playSC();
+        }
+    }
+
+    function mute() {
+        if(!muted){  
+            widget.setVolume(0);
+            muted = true; 
+            document.getElementById("muteButton").classList.toggle('button1Selected');
+        } else {
+            widget.setVolume(playerVolume);
+            muted = false; 
+            document.getElementById("muteButton").classList.remove('button1Selected');
+        }      
+    }
+
+
+    function createProgressbar(id, duration, callback) {
+
+        var progressbarParent = document.getElementById(id);
+
+        var progressbar = document.createElement('div');
+        progressbar.id = 'progressbar';
+        progressbar.className = 'progressbar';
+
+        var progressbarinner = document.createElement('div');
+        progressbarinner.className = 'inner';
+
+        progressbarinner.style.animationDuration = duration;
+
+        if (typeof(callback) === 'function') {
+            progressbarinner.addEventListener('animationend', callback);
+        }
+
+        progressbar.appendChild(progressbarinner);
+        progressbarParent.appendChild(progressbar);
+
+        progressbarinner.style.animationPlayState = 'running';
+    }
+
+    function openMenu() {
+        if(!open){
+            document.getElementById("mySidebar").style.width = "300px";
+            document.getElementById("main").style.marginLeft = "300px";
+            open = true; 
+        } else {
+            document.getElementById("mySidebar").style.width = "0";
+            document.getElementById("main").style.marginLeft= "0";
+            open = false; 
+        }
+    }
+
+    function closeMenu() {
+        document.getElementById("mySidebar").style.width = "0";
+        document.getElementById("main").style.marginLeft= "0";
+        open = false; 
+    }
+
+</script>
+</html>

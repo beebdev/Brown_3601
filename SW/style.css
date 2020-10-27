@@ -1,5 +1,234 @@
 h1 {
-    font-family: 'Courier New', Courier, monospace;
-    border: 2px solid salmon;
-    padding:25px;
+  font-family: 'Courier New', Courier, monospace;
+  border: 2px solid salmon;
+  padding:25px;
+}
+
+body {
+  font-family: Arial;
+  margin: 0;
+  background:#111111; 
+  
+}
+  
+/* Header/Logo Title */
+.header {
+  padding: 0px;
+  text-align: center;
+  color: white;
+  font-size: 25px;
+}
+  
+.button {
+  background-color: #deffdc; /* Green */
+  border: none;
+  color:black;
+  padding: 8px 8px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 4px;
+  transition-duration: 0.4s;
+  cursor: pointer;
+  border-radius: 50%;
+}
+  
+.button1 {
+  background-color: black;
+  color: black; 
+}
+  
+.button1:hover {
+  background-color: #a57458;
+  color: white;
+}
+
+.button1Selected {
+  background-color: #a57458;
+  color: white;
+}
+
+.button2 {
+  background-color: white;
+  border: none;
+  color: black;
+  padding: 10px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  margin: 4px 2px;
+  cursor: pointer;
+  border-radius: 16px;
+}
+
+.button2:hover {
+  background-color: #a57458;
+  border: none;
+  padding: 10px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  margin: 4px 2px;
+  cursor: pointer;
+  border-radius: 16px;
+  color: white;
+}
+
+/* Page Content */
+.content { 
+  max-width: 100%;
+  margin: auto;
+  text-align:center;
+  color: white;
+}
+
+.bar { 
+  margin: auto;
+  text-align:center;
+  background: black;
+  position: -webkit-sticky; /* Safari */
+  position: sticky;
+  bottom:0;
+}
+.sound{ 
+  margin: auto;
+  padding-right: 30px;
+  text-align:right;
+  background: black;
+}
+
+input[type=text] {
+  width: 800px;
+  color: black;
+  padding: 10px 20px;
+  text-decoration: none;
+  display: inline-block;
+  margin: 4px 2px;
+  border-radius: 16px;
+  font-size: 20px; 
+}
+
+.sidebar {
+  height: 100%;
+  width: 0;
+  position: fixed;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  background-color: black;
+  overflow-x: hidden;
+  transition: 0.5s;
+  padding-top: 60px;
+}
+
+.sidebar a {
+  padding: 8px 8px 8px 32px;
+  text-decoration: none;
+  font-size: 25px;
+  color: #818181;
+  transition: 0.3s;
+}
+
+.sidebar a:hover {
+  color: #a57458;
+}
+
+.sidebar .closebtn {
+  position: absolute;
+  top: 0;
+  right: 25px;
+  font-size: 36px;
+  margin-left: 50px;
+}
+
+.openbtn {
+  font-size: 30px;
+  cursor: pointer;
+  background-color: #111;
+  color: white;
+  padding: 5px 13px;
+  border: none;
+}
+
+.openbtn:hover {
+  background-color: #a57458;
+  border-radius: 100%;
+}
+
+.menu{
+  padding: 20px 30px;
+  position: -webkit-sticky; /* Safari */
+  position: sticky;
+  top:0;
+}
+
+.underline {
+  background-color: #a57458;
+  height: 5px;
+  width: 100%;
+}
+
+.active {
+  background-color: #a57458;
+  color:white;
+  height: 35px;
+  width: 10px;
+  float:left;
+}
+.active a {
+  color: white;
+}
+
+li {
+  display:block; 
+  padding: 10px;
+
+}
+
+a {
+  padding: 8px 8px 8px 32px;
+  text-decoration: none;
+  font-size: 25px;
+  color: white;
+  transition: 0.3s;
+}
+
+a:hover {
+  color:#a57458;
+}
+
+p {
+  font-size: 16px;
+  color: white;
+}
+
+#main {
+  transition: margin-left .2s;
+}
+
+.progressbar {
+  width: 80%;
+  margin: 25px auto;
+  border: solid 1px #000;
+}
+.progressbar .inner {
+  height: 15px;
+  animation: progressbar-countup;
+  animation-direction: reverse;
+  animation-duration: 3s;
+  animation-iteration-count: 1;
+  animation-fill-mode: forwards;
+  animation-play-state: paused;
+  animation-timing-function: linear;
+}
+@keyframes progressbar-countup {
+  0% {
+    width: 100%;
+    background: #0F0;
+  }
+  100% {
+    width: 0%;
+    background: #F00;
+  }
 }

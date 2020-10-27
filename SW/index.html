@@ -1,136 +1,81 @@
 <!DOCTYPE html>
+
 <!--
-A basic website that plays youtube videos that can be controlled by a
-IR remote. Created for COMP3601 Project
+An alternative page to the COMP3601 project that uses a soundcloud widget
+to play audio instead of video. Used to implement a working solution that
+can be added to the main youtube page in the future.
 -->
+
 <html lang="en">
 
 <head>
-<link rel="stylesheet" href="style.css">
+  <title>Home</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 
-
 <body>
-<h1>Music player</h1>
-<hr>
+  <div id="mySidebar" class="sidebar">
+    <a href="javascript:void(0)" class="closebtn" onclick="closeMenu()">×</a>
+    <li><div class="active"></div><a href="index.html" style="color:white; clear:left; padding:20px">Home</a></li>
+    <li><a href="youtube.html">Youtube Player</a></li>
+    <li><a href="soundcloud.html" >SoundCloud Player</a></li>
+  </div>
+      
+  <div id="main">
 
-<h3> Song id:</h3>
-<h4> Add new song</h4>
-<input type="text" id="nextSong">
-<button onclick= "addNewSong(); document.getElementById('nextSong').value = ''"> Add new song </button>
-<br><br>
-<button onclick= "getPrevSong()"> <img src="https://static.thenounproject.com/png/534333-200.png" width="20"> </button>
+    <div class = "menu">
+      <button class="openbtn" onclick="openMenu()">☰</button>
+    </div>
 
-<button onclick= "getNextSong()">  <img src="https://static.thenounproject.com/png/534333-200.png" width="20" style="transform:rotate(180deg);"> </button>
+    <div class = "header">
+      <img src="audio.png">
+    </div>
 
-<button onclick= "volumeDown()"> <img src="https://www.freeiconspng.com/uploads/volume-icon-19.png" width="20"> </button>
+    <div class="content">
+      <br>
+      <table style="width:100%; height:400px"> 
+          <tr style="width:100%;">
+            <td style="width:15%;"></td>
+            <td style="width:35%; text-align: center;">
+              <a href="youtube.html"><img src = "youtubeicon.png" width ="200px">
+              <br>
+              <br>
+              <h3>&emsp; YouTube Player</h3></a>
+            </td>
+            <td style="width:35%; text-align: center;">
+              <a href="soundcloud.html" ><img src = "soundcloudicon2.png" width ="340px">
+              <br>
+              <br>
+              <h3> &emsp; SoundCloud Player</h3></a>
+            </td>
+            <td style="width:15%;"></td>
+          </tr>
+      </table>
+    </div>
 
-<button onclick= "volumeUp()"> <img src="https://image.flaticon.com/icons/png/512/25/25695.png" width="20"></button>
-
-<button onclick= "playPause()"> <img src="https://lh3.googleusercontent.com/proxy/pL9VB6HbhJ6D-0UyJeig2GsvuqmJ8WdGxXwEHZbekhlJ-lpxPM6rdw9OTpARPEvHSJpNe9_nFu9ucMebn9a5AJCVx3P7KWkduL7IsyPmluBYgFS6xTgN45iwj5oSBDo" id = "playPauseButton" width="20"></button>
-<br>
-
-<p id="currSongs"></p>
-
-<!-- For some reason, some videos on youtube will come up with a video 
-unavailable error msg-->
-
-<!-- Iframe tag implementation
-
-<iframe id="player" width = "1000" height = "600"
-src="https://www.youtube.com/embed/1Yc6Kttxon4?autoplay=1" frameborder="0" allowfullscreen>
-</iframe>
-
--->
-
-
-<!-- Based on code: https://developers.google.com/youtube/iframe_api_reference-->
-<div id="player"></div>
-
-<script>
-    var songs = ['_6pyzdiG1g0'];
-    var index = 0;
-    var play = true; 
-
-    var tag = document.createElement('script');
-    tag.src = "https://www.youtube.com/iframe_api";
-    
-    var firstScriptTag = document.getElementsByTagName('script')[0];
-    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-
-    var player;
-    function onYouTubeIframeAPIReady() {
-    player = new YT.Player('player', {
-        height: '600',
-        width: '1000',
-        videoId: songs[index],
-        events: {
-        'onReady': onPlayerReady,
-        }
-    });
-    }
-
-    function onPlayerReady(event) {
-    player.seekTo(10, true);
-    player.setVolume(30);
-    printSongs();
-    player.playVideo();
-    }
-
-    function printSongs() {
-        var txt = "";
-        document.getElementById("currSongs").innerHTML = songs.join("<br>");
-    }
-
-    function addNewSong() {
-        var videoId = document.getElementById("nextSong").value;
-        if(videoId.includes("www.youtube.com/watch")){
-          videoId = videoId.split('=')[1];
-          if(videoId.length > 0){
-            songs.push(videoId);
-            printSongs()
-          }
-        }
-    }
-
-    function getNextSong() {
-        index++;
-        var videoId = songs[index];
-        printSongs()
-        player.loadVideoById(videoId);
-    }
-
-    function getPrevSong() {
-    index--;
-    var videoId = songs[index];
-    printSongs()
-    player.loadVideoById(videoId);
-    }
-
-    function volumeUp() {
-        var volume = player.getVolume();
-        player.setVolume(volume += 10);
-    }
-
-    function volumeDown() {
-        var volume = player.getVolume();
-        player.setVolume(volume -= 10);
-    }
-    
-    function playPause() {
-    	if(play){
-        	player.pauseVideo();
-            document.getElementById("playPauseButton").src="https://www.pinpng.com/pngs/m/34-346993_play-free-png-image-black-play-button-png.png"; 
-            play = false;
-		} else {
-        	player.playVideo();
-    document.getElementById("playPauseButton").src="https://lh3.googleusercontent.com/proxy/pL9VB6HbhJ6D-0UyJeig2GsvuqmJ8WdGxXwEHZbekhlJ-lpxPM6rdw9OTpARPEvHSJpNe9_nFu9ucMebn9a5AJCVx3P7KWkduL7IsyPmluBYgFS6xTgN45iwj5oSBDo";
-            play = true; 
-        }
-    }
-</script>
-
+    <div class = "bar" style="bottom: 0; position: absolute; min-width: 100%; height: 100px;">
+    </div>
+  </div>
 </body>
 
+<script type="text/javascript">
+  function openMenu() {
+    if(!open){
+      document.getElementById("mySidebar").style.width = "300px";
+      document.getElementById("main").style.marginLeft = "300px";
+      open = true; 
+    } else {
+      document.getElementById("mySidebar").style.width = "0";
+      document.getElementById("main").style.marginLeft= "0";
+      open = false; 
+    }
+  }
+
+  function closeMenu() {
+    document.getElementById("mySidebar").style.width = "0";
+    document.getElementById("main").style.marginLeft= "0";
+    open = false; 
+  }
+</script>
 
 </html>
