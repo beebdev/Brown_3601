@@ -207,6 +207,13 @@ Javascript code for website:
     }
 
     function changeSong() {
+
+        // Removes existing progress bar if repeated buton presses
+        if(document.contains(document.getElementById('progressbar'))) {
+            var bar = document.getElementById('progressbar');
+            bar.parentNode.removeChild(bar);
+        }
+
         widget.setVolume(playerVolume);
         createProgressbar('progressbarParent', '3s', function() {
             var bar = document.getElementById('progressbar');
