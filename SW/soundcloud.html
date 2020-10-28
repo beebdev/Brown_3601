@@ -31,7 +31,6 @@ can be added to the main youtube page in the future.
             <img src="soundcloud.png">
         </div>
 
-<!-- <h2 id = "debug"> Debug messages </h2> -->
 
         <!-- Built in media control buttons -->
         <div class = content>
@@ -63,7 +62,6 @@ can be added to the main youtube page in the future.
             <!-- Progress bar for changing songs -->
             <div id='progressbarParent'></div>
 
-            <!-- Soundcloud player -->
             <!-- Soundcloud player -->
             <iframe id="sc-widget" width="100%" height="300" scrolling="no" frameborder="no" allow="autoplay" 
             src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/293137345
@@ -108,9 +106,43 @@ can be added to the main youtube page in the future.
 Javascript code for website:
 - Soundcloud player: https://developers.soundcloud.com/blog/html5-widget-api
 - Progressbar: https://developer.mozilla.org/en-US/docs/Web/CSS/animation
-
 -->
 <script type="text/javascript">
+
+    /* Websocket setup */
+    var gateway = 'ws://brownbox.local/ws';
+    var websocket;
+
+    function initWebSocket() {
+        console.log('Trying to open a WebSocket connection...');
+        websocket = new WebSocket(gateway);
+        websocket.onopen = onOpen;
+        websocket.onclose = onClose;
+        websocket.onmessage = onMessage;
+    }
+
+    function onOpen(event) {
+        console.log('Connection opened');
+    }
+
+    function onClose(event) {
+        console.log('Connection closed');
+        setTimeout(initWebSocket, 2000);
+    }
+
+    function onMessage(event) {
+        console.log('received data:');
+        console.log(event.data);
+        //TODO Write switch statement for different button presses
+
+
+        
+    }
+
+    window.addEventListener('load', onLoad);
+    function onLoad(event) {
+        initWebSocket();
+    }
 
     var songURLs = ['https://soundcloud.com/dj-regard-1/jay-sean-ride-it-regard-remix',
                     'https://soundcloud.com/midimuppetofficial/yiruma-kiss-the-rain-free-download', 
@@ -123,6 +155,7 @@ Javascript code for website:
     var play = false; 
     var muted = false; 
 
+    // Soundcloud widget api
     var widgetIframe = document.getElementById('sc-widget');
     var widget = SC.Widget(widgetIframe);
 
@@ -137,15 +170,6 @@ Javascript code for website:
         widget.setVolume(playerVolume);
     });
 
-
-    $(document).ready(function(){
-        $("button").click(function(){
-            $("#debug2").hide();
-        });
-    });
-
-
-
     function printSongs() {
         var txt = "";
         var txt2 = "";
@@ -158,15 +182,6 @@ Javascript code for website:
         }
         document.getElementById("artist").innerHTML = txt;
         document.getElementById("song").innerHTML = txt2;
-        /*
-        var xhttp = new XMLHttpRequest();
-        xhttp.onreadystatechange = function() {
-            if (this.readyState == 4 && this.status == 200) {
-            document.getElementById("songLabel").innerHTML = txt;
-            }
-        };
-        xhttp.send();
-        */
     }
 
     function addNewSong() {
@@ -228,20 +243,11 @@ Javascript code for website:
             muted = false; 
             document.getElementById("muteButton").classList.remove('button1Selected');
         }
+
+        if(playerVolume > 100) {playerVolume = 100;}
+
         widget.setVolume(playerVolume);
         document.getElementById('debug').innerHTML = playerVolume;
-        /*
-        var xhttp = new XMLHttpRequest();
-        xhttp.onreadystatechange = function() {
-            if (this.readyState == 4 && this.status == 200) {
-                playerVolume += 10;
-                widget.setVolume(playerVolume);
-                document.getElementById('debug').innerHTML = playerVolume;
-            }
-        };
-        xhttp.open("GET", "volume", true);
-        xhttp.send();
-        */
     }
 
     function volumeDown() {
@@ -257,7 +263,6 @@ Javascript code for website:
 
     function playSC() {
         widget.play();
-        //document.getElementById('debug').innerHTML = "playSC";
         document.getElementById("playPauseButton").src="pause.png";
         play = true; 
     }
@@ -287,7 +292,6 @@ Javascript code for website:
             document.getElementById("muteButton").classList.remove('button1Selected');
         }      
     }
-
 
     function createProgressbar(id, duration, callback) {
 
