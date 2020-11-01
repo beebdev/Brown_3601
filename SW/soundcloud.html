@@ -161,11 +161,6 @@ Javascript code for website:
 
     // Binding Souncloud player events
     widget.bind(SC.Widget.Events.READY, function() {
-        widget.bind(SC.Widget.Events.PLAY, function() {
-            widget.getCurrentSound(function(currentSound) {
-                widget.setVolume(playerVolume);
-            });
-        });
         printSongs();
         widget.setVolume(playerVolume);
     });
@@ -229,10 +224,13 @@ Javascript code for website:
             bar.parentNode.removeChild(bar);
         }
 
-        widget.setVolume(playerVolume);
+
+
         createProgressbar('progressbarParent', '3s', function() {
             var bar = document.getElementById('progressbar');
             bar.parentNode.removeChild(bar);
+            widget.setVolume(playerVolume);
+            if(muted) {widget.setVolume(0);}
             if(play) { playSC(); }
         });
     }
