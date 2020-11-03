@@ -1,9 +1,8 @@
 <!DOCTYPE html>
 
 <!--
-An alternative page to the COMP3601 project that uses a soundcloud widget
-to play audio instead of video. Used to implement a working solution that
-can be added to the main youtube page in the future.
+Soundcloud player for COMP3601 T3 2020
+Created by: Brown Team
 -->
 
 <html lang="en">
@@ -34,7 +33,6 @@ can be added to the main youtube page in the future.
             <img id="header" src="soundcloud.png">
         </div>
 
-<!-- <h2 id = "debug"> Debug messages </h2> -->
 
         <!-- Built in media control buttons -->
         <div class = content>
@@ -67,7 +65,6 @@ can be added to the main youtube page in the future.
             <div id='progressbarParent'></div>
 
             <!-- Soundcloud player -->
-            <!-- Soundcloud player -->
             <iframe id="sc-widget" width="100%" height="300" scrolling="no" frameborder="no" allow="autoplay" 
             src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/293137345
 &auto_play=false
@@ -80,7 +77,6 @@ can be added to the main youtube page in the future.
             </iframe>
         </div>
 
-        
         <div class = "bar">
             <br>
             <table style="width:100%">
@@ -118,45 +114,123 @@ can be added to the main youtube page in the future.
 Javascript code for website:
 - Soundcloud player: https://developers.soundcloud.com/blog/html5-widget-api
 - Progressbar: https://developer.mozilla.org/en-US/docs/Web/CSS/animation
-
 -->
 <script type="text/javascript">
 
-/* Websocket setup */
-var gateway = 'ws://brownbox.local/ws';
-     var websocket;
+    var gateway = 'ws://brownbox.local/ws';
+    var websocket;
 
-     function initWebSocket() {
-         console.log('Trying to open a WebSocket connection...');
-         websocket = new WebSocket(gateway);
-         websocket.onopen = onOpen;
-         websocket.onclose = onClose;
-         websocket.onmessage = onMessage;
-     }
+    // Default control mapping
+    var mapping = new Map();
+    mapping.set('prev', "f4f1");
+    mapping.set('play', "f4ea");
+    mapping.set('stop',"f4e8");
+    mapping.set('next', "f4f0");
 
-     function onOpen(event) {
-         console.log('Connection opened');
-     }
+    mapping.set('mute', "f4eb");
+    mapping.set('volUp', "f47d");
+    mapping.set('volDown', "f47c");
 
-     function onClose(event) {
-         console.log('Connection closed');
-         setTimeout(initWebSocket, 2000);
-     }
+    /*
+    Mappings of NEC remote
 
-     function onMessage(event) {
-         console.log('received data:');
-         console.log(event.data);
-         //TODO Write switch statement for different button presses
+    power = 0xf4e8;
+    home =  0xf4e9;
+    up = 0xf4f4;
+    left = 0xf4f1;
+    ok = 0xf4ea;
+    right = 0xf4f0;
+    settings = 0xf4cf;
+    down = 0xf4f3;
+    back = 0xf4d7;
+    volDown = 0xf47c;
+    mute = 0xf4eb;
+    volUp = 0xf47d;
+    */
 
+    /* Websocket setup */
+    function initWebSocket() {
+        console.log('Trying to open a WebSocket connection...');
+        websocket = new WebSocket(gateway);
+        websocket.onopen = onOpen;
+        websocket.onclose = onClose;
+        websocket.onmessage = onMessage;
+    }
 
+    function onOpen(event) {
+        console.log('Connection opened');
+    }
 
-     }
+    function onClose(event) {
+        console.log('Connection closed');
+        setTimeout(initWebSocket, 2000);
+    }
 
-     window.addEventListener('load', onLoad);
-     function onLoad(event) {
-         initWebSocket();
-     }
+    function onMessage(event) {
+        console.log('received data:');
+        console.log(event.data);
 
+        var receivedData = event.data;
+        var dataType = receivedData.split(' ')[0];
+        var dataValue = receivedData.split(' ')[1];
+
+        if(dataType.localCompare("VOL") == 0) {
+            // Hexadecimal volume
+            var playVolume = parseInt(dataValue, 16);
+            document.getElementById("volumeBar").style.width =  playerVolume.toString(10) + "%";
+            widget.setVolume(playerVolume);
+
+        } else {
+            // Remote commands
+            switch(dataValue ) 
+            {
+
+                case mapping.get('prev'):
+                    getPrevSong();
+                    break;
+
+                case mapping.get('play'): 
+                    playPause(); 
+                    break;
+
+                case mapping.get('stop'):
+                    stop();
+                    break;
+
+                case mapping.get('next'):
+                    getNextSong();
+                    break;
+
+                case mapping.get('mute'):
+                    mute();
+                    break;
+
+                case mapping.get('volUp'):
+                    volumeUp();
+                    break;
+
+                case mapping.get('volDown'):
+                    volumeDown();
+                    break;
+
+                default:
+                    break;
+
+            }
+        }
+    }
+
+    // Open and close websocket connection
+    window.addEventListener('load', onLoad);
+    function onLoad(event) {
+    initWebSocket();
+    }
+    window.addEventListener('beforeunload', onUnload);
+    function onUnload(event) {
+    websocket.close();
+    }
+
+    // Media library
     var songURLs = ['https://soundcloud.com/dj-regard-1/jay-sean-ride-it-regard-remix',
                     'https://soundcloud.com/midimuppetofficial/yiruma-kiss-the-rain-free-download', 
                     'https://soundcloud.com/danieldelaneycello/the-swan-saint-saens'];
@@ -179,22 +253,25 @@ var gateway = 'ws://brownbox.local/ws';
 
     // Binding Souncloud player events
     widget.bind(SC.Widget.Events.READY, function() {
-        /*widget.bind(SC.Widget.Events.PLAY, function() {
-            widget.getCurrentSound(function(currentSound) {
-                widget.setVolume(playerVolume);
-            });
-        });*/
+        // Goes to next song after current has finished
+        widget.bind(SC.Widget.Events.FINISH, function() {
+            getNextSong();
+        });
+
+        // Syncs player controls with website controls
+        widget.bind(SC.Widget.Events.PLAY, function() {
+            play = true; 
+            document.getElementById("playPauseButton").src="pause2.png"; 
+        });
+        widget.bind(SC.Widget.Events.PAUSE, function() {
+            play = false; 
+            document.getElementById("playPauseButton").src="play2.png"; 
+        });
         printSongs();
         widget.setVolume(playerVolume);
     });
 
-
-    $(document).ready(function(){
-        $("button").click(function(){
-            $("#debug2").hide();
-        });
-    });
-
+    // Prints the current songs in the library
     function printSongs() {
         var txt = "";
         var txt2 = "";
@@ -207,57 +284,9 @@ var gateway = 'ws://brownbox.local/ws';
         }
         document.getElementById("artist").innerHTML = txt;
         document.getElementById("song").innerHTML = txt2;
-        /*
-        var xhttp = new XMLHttpRequest();
-        xhttp.onreadystatechange = function() {
-            if (this.readyState == 4 && this.status == 200) {
-            document.getElementById("songLabel").innerHTML = txt;
-            }
-        };
-        xhttp.send();
-        */
     }
 
-    function check_song_finished(){
-        var time; 
-        var end; 
-        widget.getDuration(function(duration) {
-            end = duration; 
-            //alert(duration);
-        }); 
-        widget.getPosition(function(position) {
-            time = position; 
-            if(time >= (end - 500)){
-                if(repeatSong){
-                    index--;
-                }
-                getNextSong();
-            }
-        });
-    };
-    setInterval(check_song_finished,500);
-
-    function is_paused(){
-        widget.isPaused(function(pause) {
-            if(pause) {
-                play = false; 
-                document.getElementById("playPauseButton").src="play2.png"; 
-            } else {
-                play = true; 
-                document.getElementById("playPauseButton").src="pause2.png"; 
-            }
-        }); 
-    }
-    setInterval(is_paused,100);
-
-    var input = document.getElementById("nextSong");
-    input.addEventListener("keyup", function(event) {
-        if (event.keyCode === 13) {
-            event.preventDefault();
-            document.getElementById("addButton").click();
-        }
-    });
-
+    // Adds a new soundcloud url to the lirary
     function addNewSong() {
         var songURL = document.getElementById("nextSong").value;
         var txt=""
@@ -274,8 +303,19 @@ var gateway = 'ws://brownbox.local/ws';
         document.getElementById("errorMessage").innerHTML = txt;
     }
 
+    // Enter key functionality
+    var input = document.getElementById("nextSong");
+        input.addEventListener("keyup", function(event) {
+        if (event.keyCode === 13) {
+            event.preventDefault();
+            document.getElementById("addButton").click();
+        }
+    });
+
+    // Loads next song in library
     function getNextSong() {
-        index++;
+        if(!repeatSong) { index++;} 
+
         if(index == numSongs) { index = 0;}
         widget.load(songURLs[index], {
             auto_play: false,
@@ -289,9 +329,11 @@ var gateway = 'ws://brownbox.local/ws';
         })
     }
 
+    // Loads previous song in library
     function getPrevSong() {
-        index--;
+        if(!repeatSong) { index--;} 
         if(index == -1) {index = numSongs - 1;}
+
         widget.load(songURLs[index], {
             auto_play: false,
             hide_related: true,
@@ -304,16 +346,22 @@ var gateway = 'ws://brownbox.local/ws';
         })
     }
 
+    // Loads song at index
     function changeSong() {
         // Removes existing progress bar if repeated buton presses
         if(document.contains(document.getElementById('progressbar'))) {
-             var bar = document.getElementById('progressbar');
-             bar.parentNode.removeChild(bar);
-        }
-        widget.setVolume(playerVolume);
-        createProgressbar('progressbarParent', '3s', function() {
             var bar = document.getElementById('progressbar');
             bar.parentNode.removeChild(bar);
+        }
+        widget.setVolume(playerVolume);
+
+        
+        createProgressbar('progressbarParent', '3s', function() {
+            if(document.contains(document.getElementById('progressbar'))) {
+                var bar = document.getElementById('progressbar');
+                bar.parentNode.removeChild(bar);
+            }
+            widget.setVolume(playerVolume);
             play = true; 
             widget.play(); 
             if(muted) {
@@ -322,6 +370,21 @@ var gateway = 'ws://brownbox.local/ws';
         });
     }
 
+    // Sets volume to a custom value
+    function setVolume() {
+        if(playerVolume == 0) {
+            muted = true; 
+            document.getElementById("muteButton").classList.add('button1Selected');
+        } else {
+            muted = false; 
+            document.getElementById("muteButton").classList.remove('button1Selected');
+        }
+
+        document.getElementById("volumeBar").style.width = playerVolume.toString(10) + "%";
+        widget.setVolume(playerVolume);
+    }
+
+    // Increases volume by 10
     function volumeUp() {   
         playerVolume += 10;
         if(playerVolume >= 100) {playerVolume = 100;}
@@ -332,22 +395,9 @@ var gateway = 'ws://brownbox.local/ws';
         var vol = playerVolume.toString(10) + "%";
         document.getElementById("volumeBar").style.width = vol;
         widget.setVolume(playerVolume);
-        document.getElementById('debug').innerHTML = playerVolume;
-        
-        /*
-        var xhttp = new XMLHttpRequest();
-        xhttp.onreadystatechange = function() {
-            if (this.readyState == 4 && this.status == 200) {
-                playerVolume += 10;
-                widget.setVolume(playerVolume);
-                document.getElementById('debug').innerHTML = playerVolume;
-            }
-        };
-        xhttp.open("GET", "volume", true);
-        xhttp.send();
-        */
     }
 
+    // Decreases volume by 10
     function volumeDown() {
         playerVolume -= 10;
         if(playerVolume == 0 || playerVolume < 0){
@@ -361,20 +411,6 @@ var gateway = 'ws://brownbox.local/ws';
         var vol = playerVolume.toString(10) + "%";
         document.getElementById("volumeBar").style.width = vol;
         widget.setVolume(playerVolume);
-        document.getElementById('debug').innerHTML = playerVolume;
-    }
-
-    function playSC() {
-        widget.play();
-        //document.getElementById('debug').innerHTML = "playSC";
-        document.getElementById("playPauseButton").src="pause2.png";
-        play = true; 
-    }
-
-    function pauseSC() {
-        widget.pause();
-        document.getElementById("playPauseButton").src="play2.png"; 
-        play = false;
     }
 
     function playPause() {
@@ -383,6 +419,18 @@ var gateway = 'ws://brownbox.local/ws';
         } else {
             playSC();
         }
+    }
+
+    function playSC() {
+        widget.play();
+        document.getElementById("playPauseButton").src="pause2.png";
+        play = true; 
+    }
+
+    function pauseSC() {
+        widget.pause();
+        document.getElementById("playPauseButton").src="play2.png"; 
+        play = false;
     }
 
     function stop() {
@@ -442,7 +490,6 @@ var gateway = 'ws://brownbox.local/ws';
             printSongs(); 
         }
     }
-
 
     function createProgressbar(id, duration, callback) {
 
