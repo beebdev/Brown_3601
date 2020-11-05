@@ -76,6 +76,7 @@ void spi_slave_task(void *arg) {
     /* Buffers for communication */
     WORD_ALIGNED_ATTR uint16_t recvbuf[2];
     WORD_ALIGNED_ATTR uint16_t sendbuf[2];
+    char char_buf[9];
     memset(recvbuf, 0, 4);
     spi_slave_transaction_t t;
     memset(&t, 0, sizeof(t));
@@ -92,12 +93,29 @@ void spi_slave_task(void *arg) {
         t.tx_buffer = sendbuf;
         
         ret = spi_slave_transmit(HSPI_HOST, &t, portMAX_DELAY);
-        printf("[spi_slave] Received: %04x\n", *recvbuf);
-        printf("[spi_slave] Sending data to clients...\n");
-        if (ws_server_notify_all(*((uint32_t *)recvbuf)) == ESP_OK) {
-            printf("Done!\n");
+        printf("[spi_slave] Received: %04x %04x\n", recvbuf[0], recvbuf[1]);
+        printf("[spi_slave] Sending data to clients...");
+        memset(char_buf, 0, 9);
+        
+        if (recvbuf[1] == 0x1111) {
+            sprintf(char_buf, "IRC %04x", recvbuf[0]);
+            printf("IR code\n");
+        } else if (recvbuf[1] == 0x2222) {
+            sprintf(char_buf, "VOL %04x", recvbuf[0]);
+            printf("vol update\n");
+        } else if (recvbuf[1] == 0x0000) {
+            sprintf(char_buf, "BTN %04x", recvbuf[0]);
+            printf("Button press\n");
         } else {
-            printf("Failed.\n");
+            printf("[spi_slave] Skipped!\n");
+            continue;
+        }
+
+        /* Send to clients */
+        if (ws_server_notify_all((uint8_t *)char_buf) == ESP_OK) {
+            printf("[spi_slave] Done!\n");
+        } else {
+            printf("[spi_slave] Failed.\n");
         }
         n++;
     }

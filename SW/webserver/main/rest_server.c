@@ -35,7 +35,7 @@ typedef struct rest_server_context {
 struct async_resp_arg {
     httpd_handle_t hd;
     int fd;
-    uint32_t data;
+    uint8_t *data;
 };
 
 #define CHECK_FILE_EXTENSION(filename, ext) (strcasecmp(&filename[strlen(filename) - strlen(ext)], ext) == 0)
@@ -156,14 +156,15 @@ static void send_data(void *arg) {
     struct async_resp_arg *resp_arg = arg;
     httpd_handle_t hd = resp_arg->hd;
     int fd = resp_arg->fd;
-    char data_buf[33] = {0};
-    itoa(resp_arg->data, data_buf, 16);
+    char data_buf[9] = {0};
+    memcpy(data_buf, resp_arg->data, 9);
+    // itoa(resp_arg->data, data_buf, 32);
     // uint32_t data = resp_arg->data;
 
     httpd_ws_frame_t ws_pkt;
     memset(&ws_pkt, 0, sizeof(httpd_ws_frame_t));
     ws_pkt.payload = (uint8_t *) data_buf;
-    ws_pkt.len = 4;
+    ws_pkt.len = strlen(data_buf);
     ws_pkt.type = HTTPD_WS_TYPE_TEXT;
 
     httpd_ws_send_frame_async(hd, fd, &ws_pkt);
@@ -186,7 +187,7 @@ static void send_ping(void *arg) {
 }
 
 /* Send asyncronous message to all clients */
-esp_err_t ws_server_notify_all(uint32_t data) {
+esp_err_t ws_server_notify_all(uint8_t *data) {
     if (server_ptr == NULL) {
         ESP_LOGE(TAG, "ws server not setup");
         return ESP_FAIL;
