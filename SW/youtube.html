@@ -15,8 +15,7 @@ IR remote. Created for COMP3601 Project
   <div id="mySidebar" class="sidebar">
     <a href="javascript:void(0)" class="closebtn" onclick="closeMenu()">×</a>
     <li><a href="index.html">Home</a></li>
-    <li><div class="active"></div>
-    <a href="youtube.html" style="color:white; clear:left; padding:20px">Youtube Player</a></li>
+    <li><a href="youtube.html" class="active" id="active" style="color:white;">Youtube Player</a></li>
     <li><a href="soundcloud.html">SoundCloud Player</a></li>
   </div>
   
@@ -25,26 +24,29 @@ IR remote. Created for COMP3601 Project
     <div class = "menu">
       <button class="openbtn" onclick="openMenu()">☰</button>
     </div>
+    <div class = "menu" style="right:0; position:absolute; top: 0;">
+      <button id="darkMode" class ="button button3" onclick= "toggleMode()"> <img id="modeImg" src="dark.png" width="35"> </button>
+    </div>
 
     <div class = "header">
       <img src = "youtubeicon.png" width ="125px">
       <br>
-      <img src="youtube.png">
+      <img id="header" src="youtube.png">
     </div>
 
     <div class = content>
-      <h3> Enter a YouTube URL to add a new song: </h3>
+      <h3 id = h3.1> Enter a YouTube URL to add a new song: </h3>
       <input type="text" id="nextSong">
       <br>
-      <br>
-      <button class ="button button2" onclick= "addNewSong(); document.getElementById('nextSong').value = ''"><b> +  ADD NEW SONG </b> </button>
+      <p id="errorMessage" style="color:#db3e32;"> </p>
+      <button id="addButton" class ="button button2" onclick= "addNewSong(); document.getElementById('nextSong').value = ''"><b> +  ADD NEW SONG </b> </button>
       <br>
       <!-- Displays songs in current playlist -->
       <table style="width:100%;"> 
         <tr style="width:100%;">
             <td style="width:21%;"></td>
             <td style="width:58%; text-align: left;  padding:1%">
-                <h3>Songs</h3>
+                <h3 id="h3.2">Songs</h3>
                 <div class="underline"></div> 
                 <p id="song"></p>
 
@@ -66,14 +68,21 @@ IR remote. Created for COMP3601 Project
           <td style="width:30%; text-align: left;"> 
           </td>
           <td style="width:30%; text-align: center;"> 
+            <button id = "repeatButton" class ="button button1" onclick= "repeat()">  <img src="repeat.png" width="20"> </button>
             <button class ="button button1" onclick= "getPrevSong()"> <img src="prev.png" width="20"> </button>
-            <button class ="button button1" onclick= "playPause()"> <img src="play.png" id = "playPauseButton" width="20"></button>
+            <button class ="button button1" onclick= "playPause()"> <img src="play2.png" id = "playPauseButton" width="20"></button>
+            <button class ="button button1" onclick= "stop()"> <img src="stop.png" id = "stopButton" width="20"></button>
             <button class ="button button1" onclick= "getNextSong()">  <img src="next.png" width="20"> </button>
+            <button id = "shuffleButton" class ="button button1" onclick= "shuffle()">  <img src="shuffle.png" width="20"> </button>
           </td>
           <td style="width:30%; text-align: right;"> 
             <div class = "sound">
               <button id = "muteButton" class ="button button1" onclick= "mute()"> <img src="mute.png" width="20"></button>            
-              <button class ="button button1" onclick= "volumeDown()"> <img src="volumeDown.png" width="20"> </button>              
+              <button class ="button button1" onclick= "volumeDown()"> <img src="volumeDown.png" width="20"> </button>   
+              <div class = "container">
+                <div id = "volumeBar" class = "volumeBar">
+                </div>
+              </div>           
               <button class ="button button1" onclick= "volumeUp()"> <img src="volumeUp.png" width="20"></button>
             </div>
           </td>
@@ -86,11 +95,17 @@ IR remote. Created for COMP3601 Project
 
 <script>
   var songs = ["_6pyzdiG1g0"];
+  var songList = ["_6pyzdiG1g0"];
   var songNames = ["_6pyzdiG1g0"];
   var index = 0;
   var play = false; 
   var open = false; 
-  var muted = false; 
+  var muted = false;
+  var dark = true;  
+  var repeatSong = false; 
+  var shuffleMode = false; 
+  var first = true; 
+  var command; 
 
   var tag = document.createElement('script');
   tag.src = "https://www.youtube.com/iframe_api";
@@ -117,70 +132,156 @@ IR remote. Created for COMP3601 Project
       videoId: songs[index],
       events: {
         'onReady': onPlayerReady,
+        'onStateChange': onPlayerStateChange,
+        'onError': onError
       }
     });
   }
 
   function onPlayerReady(event) {
     player.seekTo(0, true);
+    player.stopVideo();
     player.setVolume(30);
     printSongs();
-    player.playVideo();
+  }
+
+  function onPlayerStateChange(event){
+    if(event.data === 0){
+      if(repeatSong){
+        index --; 
+        index % songs.length; 
+      }
+      getNextSong();
+    } else if (event.data === 1) {
+      document.getElementById("playPauseButton").src="pause2.png"; 
+      play = true;
+    } else if (event.data === 2) {
+      document.getElementById("playPauseButton").src="play2.png"; 
+      play = false;
+    }
+  }
+
+  
+  function onError(event){
+    var index2 = index; 
+    for (var i = songList.length - 1; i >= 0; i--) {
+        if(songList[i] == songs[index]){
+          index2 = i; 
+        }
+    }
+    songList.splice(index2,1);
+    songs.splice(index, 1); 
+    songNames.splice(index, 1); 
+    if(command = "next") {
+      getNextSong();
+    } else if (command = "prev"){
+      getPrevSong();
+    }   
   }
 
 
+  function getVolume(){
+    if(!first){
+      var volume = player.getVolume();
+      var vol = volume.toString(10) + "%";
+      document.getElementById("volumeBar").style.width = vol;
+      if(player.isMuted()){
+        muted = true; 
+        document.getElementById("volumeBar").style.width = "0%";
+        document.getElementById("muteButton").classList.add('button1Selected');
+      } else {
+        muted = false; 
+        document.getElementById("muteButton").classList.remove('button1Selected');
+      }
+    }
+  }
+  setInterval(getVolume,400);
+
   function printSongs() {
-    var txt = "";
-    txt += player.getVideoData().title; 
+    var txt = songNames[index];
+    if(player.getVideoData().title) {
+      txt = player.getVideoData().title;
+    } 
     songNames[index] = txt;
     document.getElementById("song").innerHTML = songNames.join("<br>");
   }
 
+  var input = document.getElementById("nextSong");
+  input.addEventListener("keyup", function(event) {
+    if (event.keyCode === 13) {
+    event.preventDefault();
+    document.getElementById("addButton").click();
+    }
+  });
+
   function addNewSong() {
     var videoId = document.getElementById("nextSong").value;
-    if(videoId.includes("www.youtube.com/watch")){
+    var txt=""
+    if(videoId.includes("www.youtube.com/watch?v=")){
+      //videoId = videoId.substring(videoId.indexOf('=')+1);
       videoId = videoId.split('=')[1];
       if(videoId.length > 0){
+        document.getElementById("nextSong").classList.remove('error');
         songs.push(videoId);
         songNames.push(videoId);
-        printSongs()
+        printSongs();
+      } else {
+        document.getElementById("nextSong").classList.add('error');
+        txt = "Invalid YouTube URL. Please try again with a valid URL (For example, www.youtube.com/watch?v=xxxxxxxxxxx)";
+        
       }
+    } else if(videoId.includes("https://youtu.be/")){
+      videoId = videoId.split('/')[3]; 
+      document.getElementById("nextSong").classList.remove('error');
+      songs.push(videoId);
+      songNames.push(videoId);
+      songList.push(videoId);
+      printSongs();
+    } else {
+      document.getElementById("nextSong").classList.add('error');
+      txt = "Invalid YouTube URL. Please try again with a valid URL (For example, www.youtube.com/watch?v=xxxxxxxxxxx)";
     }
+    document.getElementById("errorMessage").innerHTML = txt;
   }
 
 
   function getNextSong() {
-    printSongs()
+    command = "next"
+    printSongs();
     index++;
     index = index % songs.length; 
     var videoId = songs[index];
     player.loadVideoById(videoId);
-    if(!play){
-      document.getElementById("playPauseButton").src="pause.png";
+    /*if(!play){
+      document.getElementById("playPauseButton").src="pause2.png";
       play = true; 
-    }
+    }*/
   }
 
   function getPrevSong() {
-    printSongs()
+    command = "prev"
+    printSongs();
     index--;
     index = index % songs.length; 
     var videoId = songs[index];
     player.loadVideoById(videoId);
-    if(!play){
-      document.getElementById("playPauseButton").src="pause.png";
+    /*if(!play){
+      document.getElementById("playPauseButton").src="pause2.png";
       play = true; 
-    }
+    }*/
   }
 
   function volumeUp() {
     var volume = player.getVolume();
     volume+=10; 
+    if(volume >= 100) {volume = 100}
     if(volume == 10 || muted){
       muted = false; 
       document.getElementById("muteButton").classList.remove('button1Selected');
       player.unMute();
     }
+    var vol = volume.toString(10) + "%";
+    document.getElementById("volumeBar").style.width = vol;
     player.setVolume(volume);
   }
 
@@ -189,8 +290,14 @@ IR remote. Created for COMP3601 Project
     volume-=10; 
     if(volume == 0){
       muted = true; 
-      document.getElementById("muteButton").classList.toggle('button1Selected');
+      document.getElementById("muteButton").classList.add('button1Selected');
+    } else if (muted){
+      player.unMute()
+      muted = false; 
+      document.getElementById("muteButton").classList.remove('button1Selected');
     }
+    var vol = volume.toString(10) + "%";
+    document.getElementById("volumeBar").style.width = vol;
     player.setVolume(volume);
   }
     
@@ -198,10 +305,14 @@ IR remote. Created for COMP3601 Project
     if(!muted){
       player.mute()
       muted = true; 
+      document.getElementById("volumeBar").style.width = "0%";
       document.getElementById("muteButton").classList.toggle('button1Selected');
     } else {
       player.unMute();
       muted = false; 
+      var volume = player.getVolume();
+      var vol = volume.toString(10) + "%";
+      document.getElementById("volumeBar").style.width = vol;
       document.getElementById("muteButton").classList.remove('button1Selected');
     }        
   }
@@ -209,14 +320,57 @@ IR remote. Created for COMP3601 Project
   function playPause() {
     if(play){
       player.pauseVideo();
-      document.getElementById("playPauseButton").src="play.png"; 
-      play = false;
 		} else {
       player.playVideo();
-      document.getElementById("playPauseButton").src="pause.png";
-      play = true; 
+      first = false; 
     }
   }
+
+  function stop() {
+    if(play){
+      document.getElementById("playPauseButton").src="play2.png"; 
+      play = false;
+		} 
+    player.stopVideo();
+    first = true; 
+  }
+
+  function repeat(){
+    if(repeatSong){
+      repeatSong = false; 
+      document.getElementById("repeatButton").classList.remove('button1Selected');
+    } else {
+      repeatSong = true; 
+      document.getElementById("repeatButton").classList.toggle('button1Selected');
+    }
+  }
+
+  function shuffle(){
+    if(shuffleMode){
+      shuffleMode = false; 
+      document.getElementById("shuffleButton").classList.remove('button1Selected');
+      for (var i = songs.length - 1; i >= 0; i--) {
+        songs[i] = songList[i];
+      }
+      index = songs.length -1;
+      printSongs();
+    } else {
+      shuffleMode = true; 
+      document.getElementById("shuffleButton").classList.toggle('button1Selected');
+      for (var i = songs.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var temp = songs[i];
+        var temp2 = songNames[i]; 
+        songs[i] = songs[j];
+        songNames[i] = songNames[j];
+        songs[j] = temp;
+        songNames[j] = temp2;
+      }
+      index = songs.length -1; 
+      printSongs();
+    }
+  }
+
   function openMenu() {
     if(!open){
       document.getElementById("mySidebar").style.width = "300px";
@@ -233,6 +387,32 @@ IR remote. Created for COMP3601 Project
     document.getElementById("mySidebar").style.width = "0";
     document.getElementById("main").style.marginLeft= "0";
     open = false; 
+  }
+
+  function toggleMode(){
+    var element = document.body;
+    element.classList.toggle("dark-mode");
+    if(dark){
+      document.getElementById("mySidebar").style.backgroundColor = "white";
+      document.getElementById("active").style.color = "black";
+      document.getElementById("h3.1").style.color = "black";
+      document.getElementById("h3.2").style.color = "black";
+      document.getElementById("song").style.color = "black";
+      document.getElementById("darkMode").style.backgroundColor = "#f1f1f1";
+      document.getElementById("header").src="youtubedark.png";
+      document.getElementById("modeImg").style.transform="rotate(180deg)";
+      dark = false;
+    } else {
+      document.getElementById("mySidebar").style.backgroundColor = "#111";
+      document.getElementById("active").style.color = "white";
+      document.getElementById("h3.1").style.color = "white";
+      document.getElementById("h3.2").style.color = "white";
+      document.getElementById("song").style.color = "white";
+      document.getElementById("darkMode").style.backgroundColor = "#111";
+      document.getElementById("header").src="youtube.png";
+      document.getElementById("modeImg").style.transform="rotate(360deg)";
+      dark = true; 
+    }
   }      
 </script>
 </html>
