@@ -156,9 +156,7 @@ IR remote. Created for COMP3601 Project
     if(dataType.localeCompare("VOL") == 0) {
       // Hexadecimal volume
       var playVolume = parseInt(dataValue, 16);
-      document.getElementById("volumeBar").style.width =  playerVolume.toString(10) + "%";
-      widget.setVolume(playerVolume);
-
+      setVolume(playVolume);
     } else {
       // Remote commands
       switch(dataValue ) 
@@ -390,6 +388,21 @@ IR remote. Created for COMP3601 Project
     }*/
   }
 
+  function setVolume(receivedVolume) {
+    if(receivedVolume == 0) {
+      muted = true;
+      document.getElementById("muteButton").classList.add('button1Selected');
+    } else {
+      muted = false;
+      document.getElementById("muteButton").classList.remove('button1Selected');
+      player.unMute()
+    }
+
+    var vol = receivedVolume.toString(10) + "%";
+    document.getElementById("volumeBar").style.width = vol;
+    player.setVolume(receivedVolume);
+  }
+
   function volumeUp() {
     var volume = player.getVolume();
     volume+=10; 
@@ -407,6 +420,7 @@ IR remote. Created for COMP3601 Project
   function volumeDown() {
     var volume = player.getVolume();
     volume-=10; 
+    if(volume <= 0) {volume = 0}
     if(volume == 0){
       muted = true; 
       document.getElementById("muteButton").classList.add('button1Selected');

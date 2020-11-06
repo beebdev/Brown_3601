@@ -176,9 +176,8 @@ Javascript code for website:
 
         if(dataType.localeCompare("VOL") == 0) {
             // Hexadecimal volume
-            var playVolume = parseInt(dataValue, 16);
-            document.getElementById("volumeBar").style.width =  playerVolume.toString(10) + "%";
-            widget.setVolume(playerVolume);
+            var playerVolume = parseInt(dataValue, 16);
+            setVolume(playVolume);
 
         } else {
             // Remote commands
@@ -346,7 +345,7 @@ Javascript code for website:
         })
     }
 
-    // Loads song at index
+    // Delay after loading for commands to process
     function changeSong() {
         // Removes existing progress bar if repeated buton presses
         if(document.contains(document.getElementById('progressbar'))) {
@@ -370,7 +369,7 @@ Javascript code for website:
         });
     }
 
-    // Sets volume to a custom value
+    // Sets player volume to a current value
     function setVolume() {
         if(playerVolume == 0) {
             muted = true; 
