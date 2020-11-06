@@ -93,7 +93,124 @@ IR remote. Created for COMP3601 Project
   </div>
 </body>
 
-<script>
+<script type="text/javascript">
+
+  var gateway = 'ws://brownbox.local/ws';
+  var websocket;
+
+  // Default control mapping
+  var mapping = new Map();
+  mapping.set('prev', "f4f1");
+  mapping.set('play', "f4ea");
+  mapping.set('stop',"f4e8");
+  mapping.set('next', "f4f0");
+
+  mapping.set('mute', "f4eb");
+  mapping.set('volUp', "f47d");
+  mapping.set('volDown', "f47c");
+
+  /*
+  Mappings of NEC remote
+
+  power = 0xf4e8;
+  home =  0xf4e9;
+  up = 0xf4f4;
+  left = 0xf4f1;
+  ok = 0xf4ea;
+  right = 0xf4f0;
+  settings = 0xf4cf;
+  down = 0xf4f3;
+  back = 0xf4d7;
+  volDown = 0xf47c;
+  mute = 0xf4eb;
+  volUp = 0xf47d;
+  */
+
+
+  /* Websocket setup */
+  function initWebSocket() {
+    console.log('Trying to open a WebSocket connection...');
+    websocket = new WebSocket(gateway);
+    websocket.onopen = onOpen;
+    websocket.onclose = onClose;
+    websocket.onmessage = onMessage;
+  }
+
+  function onOpen(event) {
+    console.log('Connection opened');
+  }
+
+  function onClose(event) {
+    console.log('Connection closed');
+    setTimeout(initWebSocket, 2000);
+  }
+
+  function onMessage(event) {
+    console.log('received data:');
+    console.log(event.data);
+
+    var receivedData = event.data;
+    var dataType = receivedData.split(' ')[0];
+    var dataValue = receivedData.split(' ')[1];
+
+    if(dataType.localeCompare("VOL") == 0) {
+      // Hexadecimal volume
+      var playVolume = parseInt(dataValue, 16);
+      document.getElementById("volumeBar").style.width =  playerVolume.toString(10) + "%";
+      widget.setVolume(playerVolume);
+
+    } else {
+      // Remote commands
+      switch(dataValue ) 
+      {
+
+        case mapping.get('prev'):
+          getPrevSong();
+          break;
+
+        case mapping.get('play'): 
+          playPause(); 
+          break;
+
+        case mapping.get('stop'):
+          stop();
+          break;
+
+        case mapping.get('next'):
+          getNextSong();
+          break;
+
+        case mapping.get('mute'):
+          mute();
+          break;
+
+        case mapping.get('volUp'):
+          volumeUp();
+          break;
+
+        case mapping.get('volDown'):
+          volumeDown();
+          break;
+
+        default:
+          break;
+
+      }
+    }
+  }
+
+
+  // Open and close websocket connection
+  window.addEventListener('load', onLoad);
+  function onLoad(event) {
+  initWebSocket();
+  }
+  window.addEventListener('beforeunload', onUnload);
+  function onUnload(event) {
+  websocket.close();
+  }
+
+  // Global variables
   var songs = ["_6pyzdiG1g0"];
   var songList = ["_6pyzdiG1g0"];
   var songNames = ["_6pyzdiG1g0"];
@@ -113,6 +230,7 @@ IR remote. Created for COMP3601 Project
   var firstScriptTag = document.getElementsByTagName('script')[0];
   firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
+  // Initialise youtube player
   var player;
   function onYouTubeIframeAPIReady() {
     player = new YT.Player('player', {
@@ -145,6 +263,7 @@ IR remote. Created for COMP3601 Project
     printSongs();
   }
 
+  // YT Event for play/pause and end of song
   function onPlayerStateChange(event){
     if(event.data === 0){
       if(repeatSong){
@@ -161,7 +280,7 @@ IR remote. Created for COMP3601 Project
     }
   }
 
-  
+  // Removes song if song cannot be played due to copyright
   function onError(event){
     var index2 = index; 
     for (var i = songList.length - 1; i >= 0; i--) {

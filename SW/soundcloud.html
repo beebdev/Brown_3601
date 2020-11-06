@@ -174,7 +174,7 @@ Javascript code for website:
         var dataType = receivedData.split(' ')[0];
         var dataValue = receivedData.split(' ')[1];
 
-        if(dataType.localCompare("VOL") == 0) {
+        if(dataType.localeCompare("VOL") == 0) {
             // Hexadecimal volume
             var playVolume = parseInt(dataValue, 16);
             document.getElementById("volumeBar").style.width =  playerVolume.toString(10) + "%";
