@@ -407,7 +407,7 @@ IR remote. Created for COMP3601 Project
       volume = player.getVolume();
     }
     volume+=10; 
-    if(volume >= 100) {volume = 100}
+    if(volume >= 100) {volume = 100;}
     if(volume == 10 || muted){
       muted = false; 
       document.getElementById("muteButton").classList.remove('button1Selected');
@@ -421,6 +421,7 @@ IR remote. Created for COMP3601 Project
   function volumeDown() {
     volume = player.getVolume();
     volume-=10; 
+    if(volume <= 0) {volume = 0;}
     if(volume <= 0){
       muted = true; 
       document.getElementById("muteButton").classList.add('button1Selected');

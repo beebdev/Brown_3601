@@ -399,7 +399,7 @@ Javascript code for website:
     // Decreases volume by 10
     function volumeDown() {
         playerVolume -= 10;
-        if(playerVolume == 0 || playerVolume < 0){
+        if(playerVolume <= 0){
             playerVolume = 0; 
             muted = true; 
             document.getElementById("muteButton").classList.add('button1Selected');
