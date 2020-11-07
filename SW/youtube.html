@@ -299,10 +299,9 @@ IR remote. Created for COMP3601 Project
 
   function getVolume(){
     if(!first){
-      var volume = player.getVolume();
-      var vol = volume.toString(10) + "%";
+      var vol = player.getVolume().toString(10) + "%";
       document.getElementById("volumeBar").style.width = vol;
-      if(player.isMuted()){
+      if(player.getVolume() == 0){
         muted = true; 
         document.getElementById("volumeBar").style.width = "0%";
         document.getElementById("muteButton").classList.add('button1Selected');
@@ -404,13 +403,15 @@ IR remote. Created for COMP3601 Project
   }
 
   function volumeUp() {
-    var volume = player.getVolume();
+    if(!muted) {
+      volume = player.getVolume();
+    }
     volume+=10; 
     if(volume >= 100) {volume = 100}
     if(volume == 10 || muted){
       muted = false; 
       document.getElementById("muteButton").classList.remove('button1Selected');
-      player.unMute();
+      player.setVolume(volume);
     }
     var vol = volume.toString(10) + "%";
     document.getElementById("volumeBar").style.width = vol;
@@ -418,14 +419,13 @@ IR remote. Created for COMP3601 Project
   }
 
   function volumeDown() {
-    var volume = player.getVolume();
+    volume = player.getVolume();
     volume-=10; 
-    if(volume <= 0) {volume = 0}
-    if(volume == 0){
+    if(volume <= 0){
       muted = true; 
       document.getElementById("muteButton").classList.add('button1Selected');
     } else if (muted){
-      player.unMute()
+      player.setVolume(volume);
       muted = false; 
       document.getElementById("muteButton").classList.remove('button1Selected');
     }
@@ -436,14 +436,13 @@ IR remote. Created for COMP3601 Project
     
   function mute() {
     if(!muted){
-      player.mute()
+      player.setVolume(0);
       muted = true; 
       document.getElementById("volumeBar").style.width = "0%";
       document.getElementById("muteButton").classList.toggle('button1Selected');
     } else {
-      player.unMute();
       muted = false; 
-      var volume = player.getVolume();
+      player.setVolume(volume);
       var vol = volume.toString(10) + "%";
       document.getElementById("volumeBar").style.width = vol;
       document.getElementById("muteButton").classList.remove('button1Selected');
