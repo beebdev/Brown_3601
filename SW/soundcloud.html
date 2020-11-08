@@ -176,8 +176,8 @@ Javascript code for website:
 
         if(dataType.localeCompare("VOL") == 0) {
             // Hexadecimal volume
-            var playerVolume = parseInt(dataValue, 16);
-            setVolume(playVolume);
+            var potentVolume = parseInt(dataValue, 16);
+            setVolume(potentVolume);
 
         } else {
             // Remote commands
@@ -370,8 +370,13 @@ Javascript code for website:
     }
 
     // Sets player volume to a current value
-    function setVolume() {
-        if(playerVolume == 0) {
+    // Max is 0x7f00 min is 0x00
+    function setVolume(potentVolume) {
+
+        var scaledVolume = Math.floor(potentVolume/325);
+
+        if(scaledVolume >= 100) {scaledVolume = 100;}
+        if(scaledVolume == 0) {
             muted = true; 
             document.getElementById("muteButton").classList.add('button1Selected');
         } else {
@@ -379,8 +384,9 @@ Javascript code for website:
             document.getElementById("muteButton").classList.remove('button1Selected');
         }
 
-        document.getElementById("volumeBar").style.width = playerVolume.toString(10) + "%";
-        widget.setVolume(playerVolume);
+        document.getElementById("volumeBar").style.width = scaledVolume.toString(10) + "%";
+        widget.setVolume(scaledVolume);
+        playerVolume = scaledVolume;
     }
 
     // Increases volume by 10
