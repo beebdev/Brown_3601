@@ -5,36 +5,27 @@ entity ir_decoder is
 	port (reset :	in std_logic;
 			mclk :	in std_logic;
 			din :		in std_logic;
+			IRQ :		out std_logic;
 			dout :	out std_logic_vector(15 downto 0));
 end ir_decoder;
 
 architecture Behavioral of ir_decoder is
+	-- state machine
 	type state_t is (s_ready, s_lead_H, s_lead_L, s_pulse, s_space, s_done);
 	signal state :	state_t;
 	
 	-- clk generation
 	signal clk : std_logic := '0';
 	signal clk_cnt : std_logic_vector(15 downto 0);
+	signal period : integer := 5625;
 	
 	-- counters
-	signal tcnt : std_logic_vector(7 downto 0);
-	signal bcnt : std_logic_vector(5 downto 0);
+	signal tcnt : integer;
+	signal bcnt : integer range 0 to 32;
 	
 	-- memory buffer
 	signal mem_buf : std_logic_vector(15 downto 0);
 begin
-	-- CLK generation
-	process (mclk)
-	begin
-		if mclk'event and mclk = '1' then
-			clk_cnt <= clk_cnt + 1;
-			if clk_cnt = "0001010111111001" then
-				clk_cnt <= (others => '0');
-				clk <= not clk;
-			end if;
-		end if;
-	end process;
-	
 	-- State transition
 	process (reset, clk)
 	begin
@@ -44,9 +35,10 @@ begin
 			dout <= (others => '0');
 			case state is
 				when s_ready =>
-					tcnt <= (others => '0');
-					bcnt <= (others => '0');
+					tcnt <= 0;
+					bcnt <= 0;
 					mem_buf <= (others => '0');
+					
 					if din = '0' then
 						state <= s_lead_H;
 					else
@@ -57,7 +49,7 @@ begin
 						state <= s_lead_h;
 						tcnt <= tcnt + 1;
 					elsif din = '1' then
-						if tcnt >= 79 and tcnt <= 81 then
+						if tcnt >= 79*period and tcnt <= 81*period then
 							state <= s_lead_L;
 							tcnt <= (others => '0');
 						else
@@ -69,7 +61,7 @@ begin
 						state <= s_lead_L;
 						tcnt <= tcnt + 1;
 					elsif din = '0' then
-						if tcnt >= 38 and tcnt <= 42 then
+						if tcnt >= 38*period and tcnt <= 42*period then
 							state <= s_pulse;
 							tcnt <= (others => '0');
 						else
@@ -81,10 +73,10 @@ begin
 						state <= s_pulse;
 						tcnt <= tcnt + 1;
 					elsif din = '1' then
-						if tcnt >= 4 and tcnt <=6 then
+						if tcnt >= 4*period and tcnt <= 6*period then
 							if bcnt < 32 then
 								state <= s_space;
-								tcnt <= (others => '0');
+								tcnt <= 0;
 								bcnt <= bcnt + 1;
 							else
 								state <= s_done;
@@ -98,13 +90,13 @@ begin
 						state <= s_space;
 						tcnt <= tcnt + 1;
 					elsif din = '0' then
-						if tcnt >= 3 and tcnt <= 5 then
+						if tcnt >= 3*period and tcnt <= 5*period then
 							state <= s_pulse;
 							tcnt <= (others => '0');
 							if (bcnt > 8 and bcnt <=16) or bcnt > 24 then
 								mem_buf <= '0' & mem_buf(15 downto 1);
 							end if;
-						elsif tcnt >= 13 and tcnt <=15 then
+						elsif tcnt >= 13*period and tcnt <= 15*period then
 							state <= pulse;
 							tcnt <= (others => '0');
 							if (bcnt > 8 and bcnt <=16) or bcnt > 24 then

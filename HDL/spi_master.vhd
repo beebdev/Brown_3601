@@ -2,12 +2,12 @@ library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 
 entity spi_master is
-	port (clk :			in std_logic;
-			reset :		in std_logic;
+	port( reset :		in std_logic;
+			mclk :		in std_logic;
 			enable :		in std_logic;
 			busy :		out std_logic;
 			tx_data :	in std_logic_vector(31 downto 0);
-			rx_data :	out std_logic_vector(31 downto 0);
+			--rx_data :	out std_logic_vector(31 downto 0);
 			
 			-- SPI Interface
 			spi_miso :	in std_logic;
@@ -17,20 +17,22 @@ entity spi_master is
 end spi_master;
 
 architecture Behavioral of spi_master is
+	-- state machine
 	type state_t is (s_ready, s_execute);
 	signal state : state_t;
 
+	-- counters and buffers
+	signal sclk : std_logic;
 	signal tcnt : std_logic_vector(3 downto 0);
 	signal bcnt : std_logic_vector(5 downto 0);
-	signal sclk : std_logic;
 	signal dbuf : std_logic_vector(31 downto 0);
 begin
 	-- Ext/Int signal connections
 	spi_sclk <= sclk;
-	rx_data <= dbuf;
+	--rx_data <= dbuf;
 	
 	-- SPI master ASM
-	process (clk, reset)
+	process (mclk, reset)
 	begin
 		if reset = '1' then
 			busy <= '0';
@@ -41,7 +43,7 @@ begin
 			bcnt <= (others => '0');
 			dbuf <= (others => '0');
 			state <= s_ready;
-		elsif clk'event and clk = '1' then
+		elsif mclk'event and mclk = '1' then
 			case state is
 				when s_ready =>
 					-- Output

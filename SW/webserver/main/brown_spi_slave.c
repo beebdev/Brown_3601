@@ -76,6 +76,7 @@ void spi_slave_task(void *arg) {
     /* Buffers for communication */
     WORD_ALIGNED_ATTR uint16_t recvbuf[2];
     WORD_ALIGNED_ATTR uint16_t sendbuf[2];
+    uint16_t IR_mem = 0;
     char char_buf[9];
     memset(recvbuf, 0, 4);
     spi_slave_transaction_t t;
@@ -96,9 +97,14 @@ void spi_slave_task(void *arg) {
         printf("[spi_slave] Received: %04x %04x\n", recvbuf[0], recvbuf[1]);
         printf("[spi_slave] Sending data to clients...");
         memset(char_buf, 0, 9);
-        
+
         if (recvbuf[1] == 0x1111) {
-            sprintf(char_buf, "IRC %04x", recvbuf[0]);
+            if (recvbuf[0] == 0xffff) {
+                sprintf(char_buf, "IRC %04x", IR_mem);
+            } else {
+                sprintf(char_buf, "IRC %04x", recvbuf[0]);
+                IR_mem = recvbuf[0];
+            }
             printf("IR code\n");
         } else if (recvbuf[1] == 0x2222) {
             sprintf(char_buf, "VOL %04x", recvbuf[0]);
