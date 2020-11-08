@@ -99,15 +99,24 @@ IR remote. Created for COMP3601 Project
   var websocket;
 
   // Default control mapping
-  var mapping = new Map();
-  mapping.set('prev', "f4f1");
-  mapping.set('play', "f4ea");
-  mapping.set('stop',"f4e8");
-  mapping.set('next', "f4f0");
+  var prevCommands = ["f4f1"];
+  var playCommands = ["f4ea"];
+  var stopCommands = ["f4e8"];
+  var nextCommands = ["f4f0"];
 
-  mapping.set('mute', "f4eb");
-  mapping.set('volUp', "f47d");
-  mapping.set('volDown', "f47c");
+  var muteCommands = ["f4eb"];
+  var volUpCommands = ["f47d"];
+  var volDownCommands = ["f47c"];
+
+  var mapping = new Map();
+  mapping.set('prev', prevCommands);
+  mapping.set('play', playCommands);
+  mapping.set('stop', stopCommands);
+  mapping.set('next', nextCommands);
+
+  mapping.set('mute', muteCommands);
+  mapping.set('volUp', volUpCommands);
+  mapping.set('volDown', volDownCommands);
 
   /*
   Mappings of NEC remote
@@ -159,44 +168,51 @@ IR remote. Created for COMP3601 Project
       setVolume(playVolume);
     } else {
       // Remote commands
-      switch(dataValue ) 
-      {
-
-        case mapping.get('prev'):
+      if (bindingKey){
+        var key = document.getElementById("keybind").value; //keybind must be ID of dropdown
+        const iterator = mapping.keys();
+        var result = iterator.next();
+        while (!result.done){
+          const cmdList = mapping.get(result)
+          if (cmdList.includes(dataValue)){
+            const index = cmdList.indexOf(dataValue);
+            cmdList.splice(index, 1);
+          }
+        }
+        mapping[key].push(datavalue);
+        toggleBinding();
+      }
+      
+      else{
+        if (mapping.get('prev').includes(dataValue)){
           getPrevSong();
-          break;
-
-        case mapping.get('play'): 
-          playPause(); 
-          break;
-
-        case mapping.get('stop'):
+        }
+        else if (mapping.get('play').includes(dataValue)){
+          playPause();
+        }
+        else if (mapping.get('stop').includes(dataValue)){
           stop();
-          break;
-
-        case mapping.get('next'):
+        }
+        else if (mapping.get('next').includes(dataValue)){
           getNextSong();
-          break;
-
-        case mapping.get('mute'):
+        }
+        else if (mapping.get('mute').includes(dataValue)){
           mute();
-          break;
-
-        case mapping.get('volUp'):
+        }
+        else if (mapping.get('volUp').includes(dataValue)){
           volumeUp();
-          break;
-
-        case mapping.get('volDown'):
+        }
+        else if (mapping.get('volDown').includes(dataValue)){
           volumeDown();
-          break;
-
-        default:
-          break;
-
+        }
       }
     }
   }
-
+	
+  //toggles boolean value on button press
+  function toggleBinding(){
+    bindingKey = !bindingKey;
+  }
 
   // Open and close websocket connection
   window.addEventListener('load', onLoad);
@@ -220,6 +236,7 @@ IR remote. Created for COMP3601 Project
   var repeatSong = false; 
   var shuffleMode = false; 
   var first = true; 
+  var bindingKey = false;
   var command; 
 
   var tag = document.createElement('script');
