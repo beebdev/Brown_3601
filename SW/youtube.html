@@ -264,10 +264,6 @@ IR remote. Created for COMP3601 Project
   // YT Event for play/pause and end of song
   function onPlayerStateChange(event){
     if(event.data === 0){
-      if(repeatSong){
-        index --; 
-        index % songs.length; 
-      }
       getNextSong();
     } else if (event.data === 1) {
       document.getElementById("playPauseButton").src="pause2.png"; 
@@ -365,7 +361,7 @@ IR remote. Created for COMP3601 Project
     command = "next"
     printSongs();
 
-    index++;
+    if(!repeatSong) { index++;} 
     index = index % songs.length; 
     var videoId = songs[index];
     player.loadVideoById(videoId);
@@ -379,7 +375,7 @@ IR remote. Created for COMP3601 Project
     command = "prev"
     printSongs();
 
-    index--;
+    if(!repeatSong) { index--;} 
     if(index < 0){index = songs.length -1;}
     var videoId = songs[index];
     player.loadVideoById(videoId);
