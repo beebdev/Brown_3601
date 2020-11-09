@@ -209,9 +209,9 @@ IR remote. Created for COMP3601 Project
   }
 
   // Global variables
-  var songs = ["_6pyzdiG1g0"];
-  var songList = ["_6pyzdiG1g0"];
-  var songNames = ["_6pyzdiG1g0"];
+  var songs = ["_6pyzdiG1g0", "4SZEDBFPpgw", "IGrhyOtikQ0"];
+  var songList = ["_6pyzdiG1g0", "4SZEDBFPpgw", "IGrhyOtikQ0"];
+  var songNames = ["_6pyzdiG1g0", "4SZEDBFPpgw", "IGrhyOtikQ0"];
   var index = 0;
   var play = false; 
   var open = false; 
@@ -364,6 +364,12 @@ IR remote. Created for COMP3601 Project
   function getNextSong() {
     command = "next"
     printSongs();
+
+    if(repeatSong){
+      index --; 
+      index % songs.length; 
+    }
+
     index++;
     index = index % songs.length; 
     var videoId = songs[index];
@@ -377,6 +383,12 @@ IR remote. Created for COMP3601 Project
   function getPrevSong() {
     command = "prev"
     printSongs();
+
+    if(repeatSong){
+      index ++; 
+      index % songs.length; 
+    }
+
     index--;
     index = index % songs.length; 
     var videoId = songs[index];
