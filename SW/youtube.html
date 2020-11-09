@@ -365,11 +365,6 @@ IR remote. Created for COMP3601 Project
     command = "next"
     printSongs();
 
-    if(repeatSong){
-      index --; 
-      index % songs.length; 
-    }
-
     index++;
     index = index % songs.length; 
     var videoId = songs[index];
@@ -384,13 +379,8 @@ IR remote. Created for COMP3601 Project
     command = "prev"
     printSongs();
 
-    if(repeatSong){
-      index ++; 
-      index % songs.length; 
-    }
-
     index--;
-    index = index % songs.length; 
+    if(index < 0){index = songs.length -1;}
     var videoId = songs[index];
     player.loadVideoById(videoId);
     /*if(!play){
