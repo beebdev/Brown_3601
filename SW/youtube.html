@@ -24,8 +24,41 @@ IR remote. Created for COMP3601 Project
     <div class = "menu">
       <button class="openbtn" onclick="openMenu()">☰</button>
     </div>
+    
     <div class = "menu" style="right:0; position:absolute; top: 0;">
+        
       <button id="darkMode" class ="button button3" onclick= "toggleMode()"> <img id="modeImg" src="dark.png" width="35"> </button>
+      <!-- Modal -->
+      <button id="modalBtn" class ="button button3"><img id ="modal" src="modal.png" width="32"></button>
+      <div id="myModal" class="modal" style="color:black">
+          <!-- Modal Content -->
+          <div class="modal-content">
+          <span class="close">&times;</span>
+          <h3>Edit Button Mappings</h3>
+          <p style="color:black">Instructions for button mappings...</p> 
+         <table>
+              <tr>
+                  <td style="width:60%; text-align: left;" >
+                      <label for="mapping">Control:</label>
+                      <select class ="button button2" name="mapping" id="keybind">
+                      <!-- Add more options -->
+                      <option value=""></option>
+                      <option value="play">Play</option>
+                      <option value="stop">Stop</option>
+                      <option value="prev">Prev</option>
+                      </select>
+                  </td>
+                  <td style="width:20%; text-align: right;">
+                      <button id="addButton" class ="button button2" style="background-color: #a57458; color:white; border-color: white;" onclick= "start()"><b>Start</b></button>
+                  </td>
+                  <td style="width:20%; text-align: right;">
+                      <button id="addButton" class ="button button2" onclick= "unbind()">Unbind</button>
+                  </td>
+              </tr>
+
+          </table>
+          </div>
+      </div>
     </div>
 
     <div class = "header">
@@ -214,6 +247,15 @@ IR remote. Created for COMP3601 Project
     bindingKey = !bindingKey;
   }
 
+  // Button functions 
+  function start(){
+
+  }
+
+  function unbind(){
+
+  }
+
   // Open and close websocket connection
   window.addEventListener('load', onLoad);
   function onLoad(event) {
@@ -223,6 +265,26 @@ IR remote. Created for COMP3601 Project
   function onUnload(event) {
   websocket.close();
   }
+
+    // Modal
+    var modal = document.getElementById("myModal");
+    var btn = document.getElementById("modalBtn");
+    var span = document.getElementsByClassName("close")[0];
+
+    // Open modal 
+    btn.onclick = function() {
+    modal.style.display = "block";
+    }
+
+    // Close modal 
+    span.onclick = function() {
+    modal.style.display = "none";
+    }
+    window.onclick = function(event) {
+    if (event.target == modal) {
+        modal.style.display = "none";
+    }
+    }
 
   // Global variables
   var songs = ["_6pyzdiG1g0"];
@@ -552,6 +614,9 @@ IR remote. Created for COMP3601 Project
       document.getElementById("darkMode").style.backgroundColor = "#f1f1f1";
       document.getElementById("header").src="youtubedark.png";
       document.getElementById("modeImg").style.transform="rotate(180deg)";
+      document.getElementById("modalBtn").style.backgroundColor = "#f1f1f1";
+      document.getElementById("modal").src="modaldark.png";
+
       dark = false;
     } else {
       document.getElementById("mySidebar").style.backgroundColor = "#111";
@@ -562,9 +627,10 @@ IR remote. Created for COMP3601 Project
       document.getElementById("darkMode").style.backgroundColor = "#111";
       document.getElementById("header").src="youtube.png";
       document.getElementById("modeImg").style.transform="rotate(360deg)";
+      document.getElementById("modalBtn").style.backgroundColor = "#111";
+      document.getElementById("modal").src="modal.png";
       dark = true; 
     }
   }      
 </script>
 </html>
-
