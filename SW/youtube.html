@@ -35,21 +35,24 @@ IR remote. Created for COMP3601 Project
           <div class="modal-content">
           <span class="close">&times;</span>
           <h3>Edit Button Mappings</h3>
-          <p style="color:black">Instructions for button mappings...</p> 
-         <table>
+          <label for="mapping" id="keybindInstr">Select a command you want to bind to a remote button.</label>
+          <table>
               <tr>
                   <td style="width:60%; text-align: left;" >
                       <label for="mapping">Control:</label>
                       <select class ="button button2" name="mapping" id="keybind">
-                      <!-- Add more options -->
-                      <option value=""></option>
-                      <option value="play">Play</option>
-                      <option value="stop">Stop</option>
-                      <option value="prev">Prev</option>
+                        <option value=""></option>
+                        <option value="play">Play</option>
+                        <option value="stop">Stop</option>
+                        <option value="prev">Prev</option>
+                        <option value="next">Next</option>
+                        <option value="mute">Mute</option>
+                        <option value="volume up">Volume Up</option>
+                        <option value="volume down">Volume Down</option>
                       </select>
                   </td>
                   <td style="width:20%; text-align: right;">
-                      <button id="addButton" class ="button button2" style="background-color: #a57458; color:white; border-color: white;" onclick= "start()"><b>Start</b></button>
+                      <button id="addButton" class ="button button2" style="background-color: #a57458; color:white; border-color: white;" onclick= "binding()"><b>Start</b></button>
                   </td>
                   <td style="width:20%; text-align: right;">
                       <button id="addButton" class ="button button2" onclick= "unbind()">Unbind</button>
@@ -148,8 +151,8 @@ IR remote. Created for COMP3601 Project
   mapping.set('next', nextCommands);
 
   mapping.set('mute', muteCommands);
-  mapping.set('volUp', volUpCommands);
-  mapping.set('volDown', volDownCommands);
+  mapping.set('volume up', volUpCommands);
+  mapping.set('volume down', volDownCommands);
 
   /*
   Mappings of NEC remote
@@ -163,9 +166,9 @@ IR remote. Created for COMP3601 Project
   settings = 0xf4cf;
   down = 0xf4f3;
   back = 0xf4d7;
-  volDown = 0xf47c;
+  volume down = 0xf47c;
   mute = 0xf4eb;
-  volUp = 0xf47d;
+  volume up = 0xf47d;
   */
 
 
@@ -202,58 +205,93 @@ IR remote. Created for COMP3601 Project
     } else {
       // Remote commands
       if (bindingKey){
-        var key = document.getElementById("keybind").value; //keybind must be ID of dropdown
-        const iterator = mapping.keys();
-        var result = iterator.next();
-        while (!result.done){
-          const cmdList = mapping.get(result)
-          if (cmdList.includes(dataValue)){
-            const index = cmdList.indexOf(dataValue);
-            cmdList.splice(index, 1);
-          }
-        }
-        mapping[key].push(datavalue);
-        toggleBinding();
+        rebind(dataValue);
       }
-      
-      else{
-        if (mapping.get('prev').includes(dataValue)){
-          getPrevSong();
-        }
-        else if (mapping.get('play').includes(dataValue)){
-          playPause();
-        }
-        else if (mapping.get('stop').includes(dataValue)){
-          stop();
-        }
-        else if (mapping.get('next').includes(dataValue)){
-          getNextSong();
-        }
-        else if (mapping.get('mute').includes(dataValue)){
-          mute();
-        }
-        else if (mapping.get('volUp').includes(dataValue)){
-          volumeUp();
-        }
-        else if (mapping.get('volDown').includes(dataValue)){
-          volumeDown();
-        }
+      else {
+        readMapping(dataValue);
       }
     }
   }
-	
+
   //toggles boolean value on button press
   function toggleBinding(){
     bindingKey = !bindingKey;
   }
 
-  // Button functions 
-  function start(){
+  function binding(){
+    var command = document.getElementById("keybind");
+    var instruction = document.getElementById("keybindInstr");
+    if (command.value == ""){
+      instruction.innerHTML="Select a command you want to bind to a remote button.";
+    }
+    else{
+      bindingKey = true;
+      unbinding = false;
 
+      instruction.innerHTML="Press button on remote to set to " + command.value + ".";
+    }
   }
 
-  function unbind(){
+  function rebind(dataValue){
+    var key = document.getElementById("keybind").value; 
+    //iterate through the mappings to remove any previous binding.
+    const iterator = mapping.keys();
+    var result = iterator.next();
+    while (!result.done){
+      const cmdList = mapping.get(result.value);
+      console.log(cmdList);
+      if (cmdList.includes(dataValue)){
+        const index = cmdList.indexOf(dataValue);
+        cmdList.splice(index, 1);
+      }
+      result = iterator.next();
+    }
+    var instruction = document.getElementById("keybindInstr");
+    var command = document.getElementById("keybind");
+    //add new button to binding for the selected command
+    if (unbinding) {
+      instruction.innerHTML="The keybinding for a button has been removed.";
+    }
+    else {
+      mapping.get(key).push(dataValue);
+      instruction.innerHTML="New button for " + command.value + " has been set.";
+    }
+    bindingKey = false;
+    unbinding = false;
+  }
 
+
+  function unbind(){
+    unbinding = true;
+    bindingKey = true;
+    var instruction = document.getElementById("keybindInstr");
+    var command = document.getElementById("keybind");
+
+    instruction.innerHTML="Press button on remote to set to remove the binding of.";
+  }
+
+  function readMapping(dataValue){
+    if (mapping.get('prev').includes(dataValue)){
+      getPrevSong();
+    }
+    else if (mapping.get('play').includes(dataValue)){
+      playPause();
+    }
+    else if (mapping.get('stop').includes(dataValue)){
+      stop();
+    }
+    else if (mapping.get('next').includes(dataValue)){
+      getNextSong();
+    }
+    else if (mapping.get('mute').includes(dataValue)){
+      mute();
+    }
+    else if (mapping.get('volume up').includes(dataValue)){
+      volumeUp();
+    }
+    else if (mapping.get('volume down').includes(dataValue)){
+      volumeDown();
+    }
   }
 
   // Open and close websocket connection
@@ -266,25 +304,29 @@ IR remote. Created for COMP3601 Project
   websocket.close();
   }
 
-    // Modal
-    var modal = document.getElementById("myModal");
-    var btn = document.getElementById("modalBtn");
-    var span = document.getElementsByClassName("close")[0];
+  // Modal
+  var modal = document.getElementById("myModal");
+  var btn = document.getElementById("modalBtn");
+  var span = document.getElementsByClassName("close")[0];
 
-    // Open modal 
-    btn.onclick = function() {
+  // Open modal 
+  btn.onclick = function() {
     modal.style.display = "block";
-    }
+  }
 
-    // Close modal 
-    span.onclick = function() {
+  // Close modal 
+  span.onclick = function() {
     modal.style.display = "none";
-    }
-    window.onclick = function(event) {
+    bindingKey = false;
+    unbinding = false;
+  }
+  window.onclick = function(event) {
     if (event.target == modal) {
-        modal.style.display = "none";
+      modal.style.display = "none";
+      bindingKey = false;
+      unbinding = false;
     }
-    }
+  }
 
   // Global variables
   var songs = ["_6pyzdiG1g0"];
@@ -299,6 +341,7 @@ IR remote. Created for COMP3601 Project
   var shuffleMode = false; 
   var first = true; 
   var bindingKey = false;
+  var unbinding = false;
   var command; 
 
   var tag = document.createElement('script');
