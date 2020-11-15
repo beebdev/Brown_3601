@@ -24,8 +24,44 @@ IR remote. Created for COMP3601 Project
     <div class = "menu">
       <button class="openbtn" onclick="openMenu()">☰</button>
     </div>
+    
     <div class = "menu" style="right:0; position:absolute; top: 0;">
+        
       <button id="darkMode" class ="button button3" onclick= "toggleMode()"> <img id="modeImg" src="dark.png" width="35"> </button>
+      <!-- Modal -->
+      <button id="modalBtn" class ="button button3"><img id ="modal" src="modal.png" width="32"></button>
+      <div id="myModal" class="modal" style="color:black">
+          <!-- Modal Content -->
+          <div class="modal-content">
+          <span class="close">&times;</span>
+          <h3>Edit Button Mappings</h3>
+          <label for="mapping" id="keybindInstr">Select a command you want to bind to a remote button.</label>
+          <table>
+              <tr>
+                  <td style="width:60%; text-align: left;" >
+                      <label for="mapping">Control:</label>
+                      <select class ="button button2" name="mapping" id="keybind">
+                        <option value=""></option>
+                        <option value="play">Play</option>
+                        <option value="stop">Stop</option>
+                        <option value="prev">Prev</option>
+                        <option value="next">Next</option>
+                        <option value="mute">Mute</option>
+                        <option value="volume up">Volume Up</option>
+                        <option value="volume down">Volume Down</option>
+                      </select>
+                  </td>
+                  <td style="width:20%; text-align: right;">
+                      <button id="addButton" class ="button button2" style="background-color: #a57458; color:white; border-color: white;" onclick= "binding()"><b>Start</b></button>
+                  </td>
+                  <td style="width:20%; text-align: right;">
+                      <button id="addButton" class ="button button2" onclick= "unbind()">Unbind</button>
+                  </td>
+              </tr>
+
+          </table>
+          </div>
+      </div>
     </div>
 
     <div class = "header">
@@ -99,15 +135,24 @@ IR remote. Created for COMP3601 Project
   var websocket;
 
   // Default control mapping
-  var mapping = new Map();
-  mapping.set('prev', "f4f1");
-  mapping.set('play', "f4ea");
-  mapping.set('stop',"f4e8");
-  mapping.set('next', "f4f0");
+  var prevCommands = ["f4f1"];
+  var playCommands = ["f4ea"];
+  var stopCommands = ["f4e8"];
+  var nextCommands = ["f4f0"];
 
-  mapping.set('mute', "f4eb");
-  mapping.set('volUp', "f47d");
-  mapping.set('volDown', "f47c");
+  var muteCommands = ["f4eb"];
+  var volUpCommands = ["f47d"];
+  var volDownCommands = ["f47c"];
+
+  var mapping = new Map();
+  mapping.set('prev', prevCommands);
+  mapping.set('play', playCommands);
+  mapping.set('stop', stopCommands);
+  mapping.set('next', nextCommands);
+
+  mapping.set('mute', muteCommands);
+  mapping.set('volume up', volUpCommands);
+  mapping.set('volume down', volDownCommands);
 
   /*
   Mappings of NEC remote
@@ -121,9 +166,9 @@ IR remote. Created for COMP3601 Project
   settings = 0xf4cf;
   down = 0xf4f3;
   back = 0xf4d7;
-  volDown = 0xf47c;
+  volume down = 0xf47c;
   mute = 0xf4eb;
-  volUp = 0xf47d;
+  volume up = 0xf47d;
   */
 
 
@@ -159,44 +204,95 @@ IR remote. Created for COMP3601 Project
       setVolume(potentVolume);
     } else {
       // Remote commands
-      switch(dataValue ) 
-      {
-
-        case mapping.get('prev'):
-          getPrevSong();
-          break;
-
-        case mapping.get('play'): 
-          playPause(); 
-          break;
-
-        case mapping.get('stop'):
-          stop();
-          break;
-
-        case mapping.get('next'):
-          getNextSong();
-          break;
-
-        case mapping.get('mute'):
-          mute();
-          break;
-
-        case mapping.get('volUp'):
-          volumeUp();
-          break;
-
-        case mapping.get('volDown'):
-          volumeDown();
-          break;
-
-        default:
-          break;
-
+      if (bindingKey){
+        rebind(dataValue);
+      }
+      else {
+        readMapping(dataValue);
       }
     }
   }
 
+  //toggles boolean value on button press
+  function toggleBinding(){
+    bindingKey = !bindingKey;
+  }
+
+  function binding(){
+    var command = document.getElementById("keybind");
+    var instruction = document.getElementById("keybindInstr");
+    if (command.value == ""){
+      instruction.innerHTML="Select a command you want to bind to a remote button.";
+    }
+    else{
+      bindingKey = true;
+      unbinding = false;
+
+      instruction.innerHTML="Press button on remote to set to " + command.value + ".";
+    }
+  }
+
+  function rebind(dataValue){
+    var key = document.getElementById("keybind").value; 
+    //iterate through the mappings to remove any previous binding.
+    const iterator = mapping.keys();
+    var result = iterator.next();
+    while (!result.done){
+      const cmdList = mapping.get(result.value);
+      console.log(cmdList);
+      if (cmdList.includes(dataValue)){
+        const index = cmdList.indexOf(dataValue);
+        cmdList.splice(index, 1);
+      }
+      result = iterator.next();
+    }
+    var instruction = document.getElementById("keybindInstr");
+    var command = document.getElementById("keybind");
+    //add new button to binding for the selected command
+    if (unbinding) {
+      instruction.innerHTML="The keybinding for a button has been removed.";
+    }
+    else {
+      mapping.get(key).push(dataValue);
+      instruction.innerHTML="New button for " + command.value + " has been set.";
+    }
+    bindingKey = false;
+    unbinding = false;
+  }
+
+
+  function unbind(){
+    unbinding = true;
+    bindingKey = true;
+    var instruction = document.getElementById("keybindInstr");
+    var command = document.getElementById("keybind");
+
+    instruction.innerHTML="Press button on remote to set to remove the binding of.";
+  }
+
+  function readMapping(dataValue){
+    if (mapping.get('prev').includes(dataValue)){
+      getPrevSong();
+    }
+    else if (mapping.get('play').includes(dataValue)){
+      playPause();
+    }
+    else if (mapping.get('stop').includes(dataValue)){
+      stop();
+    }
+    else if (mapping.get('next').includes(dataValue)){
+      getNextSong();
+    }
+    else if (mapping.get('mute').includes(dataValue)){
+      mute();
+    }
+    else if (mapping.get('volume up').includes(dataValue)){
+      volumeUp();
+    }
+    else if (mapping.get('volume down').includes(dataValue)){
+      volumeDown();
+    }
+  }
 
   // Open and close websocket connection
   window.addEventListener('load', onLoad);
@@ -206,6 +302,30 @@ IR remote. Created for COMP3601 Project
   window.addEventListener('beforeunload', onUnload);
   function onUnload(event) {
   websocket.close();
+  }
+
+  // Modal
+  var modal = document.getElementById("myModal");
+  var btn = document.getElementById("modalBtn");
+  var span = document.getElementsByClassName("close")[0];
+
+  // Open modal 
+  btn.onclick = function() {
+    modal.style.display = "block";
+  }
+
+  // Close modal 
+  span.onclick = function() {
+    modal.style.display = "none";
+    bindingKey = false;
+    unbinding = false;
+  }
+  window.onclick = function(event) {
+    if (event.target == modal) {
+      modal.style.display = "none";
+      bindingKey = false;
+      unbinding = false;
+    }
   }
 
   // Global variables
@@ -220,6 +340,8 @@ IR remote. Created for COMP3601 Project
   var repeatSong = false; 
   var shuffleMode = false; 
   var first = true; 
+  var bindingKey = false;
+  var unbinding = false;
   var command; 
 
   var tag = document.createElement('script');
@@ -539,6 +661,9 @@ IR remote. Created for COMP3601 Project
       document.getElementById("darkMode").style.backgroundColor = "#f1f1f1";
       document.getElementById("header").src="youtubedark.png";
       document.getElementById("modeImg").style.transform="rotate(180deg)";
+      document.getElementById("modalBtn").style.backgroundColor = "#f1f1f1";
+      document.getElementById("modal").src="modaldark.png";
+
       dark = false;
     } else {
       document.getElementById("mySidebar").style.backgroundColor = "#111";
@@ -549,9 +674,10 @@ IR remote. Created for COMP3601 Project
       document.getElementById("darkMode").style.backgroundColor = "#111";
       document.getElementById("header").src="youtube.png";
       document.getElementById("modeImg").style.transform="rotate(360deg)";
+      document.getElementById("modalBtn").style.backgroundColor = "#111";
+      document.getElementById("modal").src="modal.png";
       dark = true; 
     }
   }      
 </script>
 </html>
-

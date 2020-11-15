@@ -26,7 +26,41 @@ Created by: Brown Team
         </div>
         <div class = "menu" style="right:0; position:absolute; top: 0;">
             <button id="darkMode" class ="button button3" onclick= "toggleMode()"> <img id="modeImg" src="dark.png" width="35"> </button>
-          </div>
+                  <!-- Modal -->
+            <button id="modalBtn" class ="button button3"><img id ="modal" src="modal.png" width="32"></button>
+            <div id="myModal" class="modal" style="color:black">
+                <!-- Modal Content -->
+                <div class="modal-content">
+                <span class="close">&times;</span>
+                <h3>Edit Button Mappings</h3>
+                <label for="mapping" id="keybindInstr">Select a command you want to bind to a remote button.</label>
+                <table>
+                    <tr>
+                        <td style="width:60%; text-align: left;" >
+                            <label for="mapping">Control:</label>
+                            <select class ="button button2" name="mapping" id="keybind">
+                                <option value=""></option>
+                                <option value="play">Play</option>
+                                <option value="stop">Stop</option>
+                                <option value="prev">Prev</option>
+                                <option value="next">Next</option>
+                                <option value="mute">Mute</option>
+                                <option value="volume up">Volume Up</option>
+                                <option value="volume down">Volume Down</option>
+                            </select>
+                        </td>
+                        <td style="width:20%; text-align: right;">
+                            <button id="addButton" class ="button button2" style="background-color: #a57458; color:white; border-color: white;" onclick= "binding()"><b>Start</b></button>
+                        </td>
+                        <td style="width:20%; text-align: right;">
+                            <button id="addButton" class ="button button2" onclick= "unbind()">Unbind</button>
+                        </td>
+                    </tr>
+
+                </table>
+                </div>
+            </div>
+        </div>
         <div class = "header">
             <img src = "soundcloudicon2.png" width ="200px">
             <br>
@@ -121,16 +155,24 @@ Javascript code for website:
     var websocket;
 
     // Default control mapping
+    var prevCommands = ["f4f1"];
+    var playCommands = ["f4ea"];
+    var stopCommands = ["f4e8"];
+    var nextCommands = ["f4f0"];
+
+    var muteCommands = ["f4eb"];
+    var volUpCommands = ["f47d"];
+    var volDownCommands = ["f47c"];
+
     var mapping = new Map();
-    mapping.set('prev', "f4f1");
-    mapping.set('play', "f4ea");
-    mapping.set('stop',"f4e8");
-    mapping.set('next', "f4f0");
+    mapping.set('prev', prevCommands);
+    mapping.set('play', playCommands);
+    mapping.set('stop', stopCommands);
+    mapping.set('next', nextCommands);
 
-    mapping.set('mute', "f4eb");
-    mapping.set('volUp', "f47d");
-    mapping.set('volDown', "f47c");
-
+    mapping.set('mute', muteCommands);
+    mapping.set('volume up', volUpCommands);
+    mapping.set('volume down', volDownCommands);
     /*
     Mappings of NEC remote
 
@@ -166,58 +208,110 @@ Javascript code for website:
         setTimeout(initWebSocket, 2000);
     }
 
-    function onMessage(event) {
-        console.log('received data:');
-        console.log(event.data);
 
-        var receivedData = event.data;
-        var dataType = receivedData.split(' ')[0];
-        var dataValue = receivedData.split(' ')[1];
+  function onMessage(event) {
+    console.log('received data:');
+    console.log(event.data);
 
-        if(dataType.localeCompare("VOL") == 0) {
-            // Hexadecimal volume
-            var potentVolume = parseInt(dataValue, 16);
-            setVolume(potentVolume);
+    var receivedData = event.data;
+    var dataType = receivedData.split(' ')[0];
+    var dataValue = receivedData.split(' ')[1];
 
-        } else {
-            // Remote commands
-            switch(dataValue ) 
-            {
-
-                case mapping.get('prev'):
-                    getPrevSong();
-                    break;
-
-                case mapping.get('play'): 
-                    playPause(); 
-                    break;
-
-                case mapping.get('stop'):
-                    stop();
-                    break;
-
-                case mapping.get('next'):
-                    getNextSong();
-                    break;
-
-                case mapping.get('mute'):
-                    mute();
-                    break;
-
-                case mapping.get('volUp'):
-                    volumeUp();
-                    break;
-
-                case mapping.get('volDown'):
-                    volumeDown();
-                    break;
-
-                default:
-                    break;
-
-            }
-        }
+    if(dataType.localeCompare("VOL") == 0) {
+      // Hexadecimal volume
+      var playVolume = parseInt(dataValue, 16);
+      setVolume(playVolume);
+    } else {
+      // Remote commands
+      if (bindingKey){
+        rebind(dataValue);
+      }
+      else {
+        readMapping(dataValue);
+      }
     }
+  }
+
+  //toggles boolean value on button press
+  function toggleBinding(){
+    bindingKey = !bindingKey;
+  }
+
+  function binding(){
+    var command = document.getElementById("keybind");
+    var instruction = document.getElementById("keybindInstr");
+    if (command.value == ""){
+      instruction.innerHTML="Select a command you want to bind to a remote button.";
+    }
+    else{
+      bindingKey = true;
+      unbinding = false;
+
+      instruction.innerHTML="Press button on remote to set to " + command.value + ".";
+    }
+  }
+
+  function rebind(dataValue){
+    var key = document.getElementById("keybind").value; 
+    //iterate through the mappings to remove any previous binding.
+    const iterator = mapping.keys();
+    var result = iterator.next();
+    while (!result.done){
+      const cmdList = mapping.get(result.value);
+      console.log(cmdList);
+      if (cmdList.includes(dataValue)){
+        const index = cmdList.indexOf(dataValue);
+        cmdList.splice(index, 1);
+      }
+      result = iterator.next();
+    }
+    var instruction = document.getElementById("keybindInstr");
+    var command = document.getElementById("keybind");
+    //add new button to binding for the selected command
+    if (unbinding) {
+      instruction.innerHTML="The keybinding for a button has been removed.";
+    }
+    else {
+      mapping.get(key).push(dataValue);
+      instruction.innerHTML="New button for " + command.value + " has been set.";
+    }
+    bindingKey = false;
+    unbinding = false;
+  }
+
+
+  function unbind(){
+    unbinding = true;
+    bindingKey = true;
+    var instruction = document.getElementById("keybindInstr");
+    var command = document.getElementById("keybind");
+
+    instruction.innerHTML="Press button on remote to set to remove the binding of.";
+  }
+
+  function readMapping(dataValue){
+    if (mapping.get('prev').includes(dataValue)){
+      getPrevSong();
+    }
+    else if (mapping.get('play').includes(dataValue)){
+      playPause();
+    }
+    else if (mapping.get('stop').includes(dataValue)){
+      stop();
+    }
+    else if (mapping.get('next').includes(dataValue)){
+      getNextSong();
+    }
+    else if (mapping.get('mute').includes(dataValue)){
+      mute();
+    }
+    else if (mapping.get('volume up').includes(dataValue)){
+      volumeUp();
+    }
+    else if (mapping.get('volume down').includes(dataValue)){
+      volumeDown();
+    }
+  }
 
     // Open and close websocket connection
     window.addEventListener('load', onLoad);
@@ -228,6 +322,32 @@ Javascript code for website:
     function onUnload(event) {
     websocket.close();
     }
+
+
+    // Modal
+    var modal = document.getElementById("myModal");
+    var btn = document.getElementById("modalBtn");
+    var span = document.getElementsByClassName("close")[0];
+
+    // Open modal 
+    btn.onclick = function() {
+        modal.style.display = "block";
+    }
+
+    // Close modal 
+    span.onclick = function() {
+        modal.style.display = "none";
+        bindingKey = false;
+        unbinding = false;
+    }
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            modal.style.display = "none";
+            bindingKey = false;
+            unbinding = false;
+        }
+    }
+
 
     // Media library
     var songURLs = ['https://soundcloud.com/dj-regard-1/jay-sean-ride-it-regard-remix',
@@ -246,6 +366,8 @@ Javascript code for website:
     var dark = true;
     var repeatSong = false; 
     var shuffleMode = false; 
+    var bindingKey = false;
+    var unbinding = false;
 
     var widgetIframe = document.getElementById('sc-widget');
     var widget = SC.Widget(widgetIframe);
